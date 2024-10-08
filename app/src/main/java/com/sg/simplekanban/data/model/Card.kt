@@ -1,7 +1,11 @@
 package com.sg.simplekanban.data.model
 
+import com.google.firebase.firestore.DocumentId
+
 data class Card (
+    @DocumentId
     val documentId : String? = null,
+
     var title: String? = null,
     var description: String? = null,
     var columnId : String? = null,

@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
-import com.sg.simplekanban.domain.usecases.CardUseCase
-import com.sg.simplekanban.domain.usecases.ColumnUseCase
+import com.sg.simplekanban.domain.CardUseCase
+import com.sg.simplekanban.domain.ColumnUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
