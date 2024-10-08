@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "954328466328",
+    "project_id": "simple-kanban-14a3b",
+    "storage_bucket": "simple-kanban-14a3b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:954328466328:android:736616d1b7307df3e821ed",
+        "android_client_info": {
+          "package_name": "com.sg.simplekanban"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "954328466328-ba94i1mgu6uip5tr7gb08pduqss087n6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sg.simplekanban",
+            "certificate_hash": "ae289d01447066e69d904784de33008c11a3f3de"
+          }
+        },
+        {
+          "client_id": "954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCKs6O3k-IrlzNyBJ4qh57e0vOvsZmF7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

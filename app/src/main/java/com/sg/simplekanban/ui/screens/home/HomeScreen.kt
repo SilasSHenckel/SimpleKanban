@@ -1,0 +1,320 @@
+package com.sg.simplekanban.ui.screens.home
+
+import android.graphics.Color
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.ui.components.MoveCardDialog
+import com.sg.simplekanban.ui.routes.AppScreen
+import com.sg.simplekanban.ui.screens.card.CardInMemory
+import com.sg.simplekanban.ui.theme.CardBackgroundGrey
+import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
+import com.sg.simplekanban.ui.theme.SelectedBlue
+import com.sg.simplekanban.ui.theme.TitleGrey
+import com.sg.simplekanban.ui.theme.White
+
+@Composable
+fun HomeScreen(
+    nav: NavHostController,
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
+    SetStatusBarColor()
+
+    val selectedColumnId = homeViewModel.selectedColumnId
+    val isShowingDialog = homeViewModel.showMoveCardDialog
+
+    val columns = homeViewModel.getColumns()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxSize()
+        ) {
+            MyToolBar(title = "TASKS")
+
+            MyBody(
+                nav = nav,
+                columnId = selectedColumnId,
+                homeViewModel = homeViewModel,
+                columns = columns,
+                isShowingDialog = isShowingDialog
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = MenuBackgroundGrey)
+                .align(Alignment.BottomCenter)
+        ) {
+            for (column in columns) {
+                MyTab(
+                    name = column.name,
+                    onTabClick = { homeViewModel.selectedColumnId = column.id },
+                    selected = selectedColumnId == column.id
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MyToolBar(
+    title: String,
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .background(color = MenuBackgroundGrey)
+            .padding(start = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Text(
+            text = title,
+            color = TitleGrey,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp
+            )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun MyBody(
+    columnId: Long,
+    homeViewModel: HomeViewModel,
+    nav: NavHostController,
+    columns: List<Column>,
+    isShowingDialog: Boolean
+){
+
+    val cardList = homeViewModel.getCardsByColumnId(columnId)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 60.dp)
+    ) {
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(space = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(all = 16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            item {
+                MyButtonAddCard(nav = nav, columnId)
+            }
+
+            itemsIndexed(cardList) { index: Int, card: Card ->
+                MyListItem(card = card, nav, homeViewModel, columns, isShowingDialog)
+            }
+        }
+    }
+}
+
+@Composable
+fun MyButtonAddCard(
+    nav: NavHostController,
+    columnId: Long
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(40.dp)
+        .background(color = SelectedBlue, shape = RoundedCornerShape(20.dp))
+        .clickable {
+            CardInMemory.card = null
+            nav.navigate(AppScreen.Card.name + "/" + columnId)
+        },
+        Alignment.Center,
+
+    ) {
+
+        Icon(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 16.dp),
+            imageVector = Icons.Rounded.Add,
+            tint = White,
+            contentDescription = "add"
+        )
+
+        Text(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 20.dp),
+            text = "ADICIONAR CARTÃO",
+            color = White,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun MyListItem(
+    card: Card,
+    nav: NavHostController,
+    homeViewModel: HomeViewModel,
+    columns: List<Column>,
+    isShowingDialog: Boolean
+){
+
+    if (isShowingDialog){
+        val moveColumns = mutableListOf<Column>()
+        for(column in columns){
+            if(column.id != card.columnId) moveColumns.add(column)
+        }
+        MoveCardDialog(
+            card = card,
+            columns = moveColumns,
+            homeViewModel = homeViewModel,
+            setShowDialog = { homeViewModel.showMoveCardDialog = it }
+        )
+    }
+
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = CardBackgroundGrey, shape = RoundedCornerShape(10.dp))
+            .padding(20.dp)
+            .combinedClickable(
+                onClick = {
+                    CardInMemory.card = card
+                    nav.navigate(AppScreen.Card.name + "/" + card.columnId)
+                },
+                onLongClick = {
+                    homeViewModel.showMoveCardDialog = true
+                },
+            )
+    ) {
+        Text(
+            text = card.title,
+            color = TitleGrey,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp
+        )
+    }
+}
+
+@Composable
+fun MyTab(
+    name: String,
+    onTabClick: () -> Unit,
+    selected: Boolean,
+    widthDivisionNumber: Int = 3
+) {
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    Box(
+        modifier = Modifier
+            .clickable { onTabClick() }
+            .width(screenWidth / widthDivisionNumber)
+            .height(60.dp),
+    ) {
+        Text(
+            modifier = Modifier
+                .align(Alignment.Center),
+            text = name,
+            color = if (selected) SelectedBlue else TitleGrey,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 18.sp
+        )
+
+        if (selected) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        color = SelectedBlue,
+                        shape = RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)
+                    )
+                    .height(3.dp)
+                    .width((screenWidth / widthDivisionNumber) - 40.dp)
+            ) {
+
+            }
+        }
+    }
+}
+ @Composable
+fun SetStatusBarColor(){
+
+    val statusBarLight = 0xFFF0F0F0.toInt()
+    val statusBarDark = Color.BLUE
+    val navigationBarLight = Color.BLACK
+    val navigationBarDark = Color.BLUE
+    val isDarkMode = isSystemInDarkTheme()
+    val context = LocalContext.current as ComponentActivity
+
+    DisposableEffect(isDarkMode) {
+        context.enableEdgeToEdge(
+            statusBarStyle = if (!isDarkMode) {
+                SystemBarStyle.light(
+                    statusBarLight,
+                    statusBarDark
+                )
+            } else {
+                SystemBarStyle.dark(
+                    statusBarDark
+                )
+            },
+            navigationBarStyle = if(!isDarkMode){
+                SystemBarStyle.light(
+                    navigationBarLight,
+                    navigationBarDark
+                )
+            } else {
+                SystemBarStyle.dark(navigationBarDark)
+            }
+        )
+
+        onDispose { }
+    }
+}
