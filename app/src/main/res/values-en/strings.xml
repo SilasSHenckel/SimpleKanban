@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Simple Kanban</string>
+
+    <string name="add_card">ADD CARD</string>
+    <string name="to_do">TO DO</string>
+    <string name="doing">DOING</string>
+    <string name="done">DONE</string>
+    <string name="create_card">Create Card</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="insert_title">Insert a title!</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="delete_card">"DO YOU WANT TO DELETE THIS CARD?"</string>
+    <string name="delete">DELETE</string>
+    <string name="cancel">CANCEL</string>
+    <string name="card_moved">CARD MOVED TO:</string>
+    <string name="move_to">Move to:</string>
+    <string name="card_selected">"CARD SELECTED"</string>
+</resources>

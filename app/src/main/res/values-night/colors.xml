@@ -3,10 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="menu_background">#FFF0F0F0</color>
-    <color name="title">#FF555555</color>
+    <color name="menu_background">#FF272727</color>
+    <color name="title">#FFFFFF</color>
     <color name="blue_selected">#2D9FE5</color>
-    <color name="card_background">#FFECECEC</color>
-
+    <color name="card_background">#252525</color>
 
 </resources>

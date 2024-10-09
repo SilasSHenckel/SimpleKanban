@@ -20,3 +20,6 @@ val CancelGrey = Color(0xFFA8A8A8)
 val Red = Color(0xFFE90909)
 
 val White = Color(0xFFFFFFFF)
+
+val MenuBackgroundDark = Color(0xFF272727)
+val BackgroundDark = Color(0xFF1F1F1F)

@@ -1,7 +1,6 @@
 package com.sg.simplekanban.ui.screens.home
 
 import android.graphics.Color
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -33,17 +33,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.sg.simplekanban.R
+import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.MoveCardDialog
 import com.sg.simplekanban.ui.routes.AppScreen
-import com.sg.simplekanban.ui.screens.card.CardInMemory
 import com.sg.simplekanban.ui.theme.CardBackgroundGrey
+import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
 import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.TitleGrey
@@ -85,14 +89,14 @@ fun HomeScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = MenuBackgroundGrey)
+                .background(color = colorResource(id = R.color.menu_background))
                 .align(Alignment.BottomCenter)
         ) {
             for (column in columns) {
                 MyTab(
-                    name = column.name,
-                    onTabClick = { homeViewModel.selectedColumnId = column.id },
-                    selected = selectedColumnId == column.id
+                    name = column.name ?: "",
+                    onTabClick = { homeViewModel.selectedColumnId = column.documentId ?: "" },
+                    selected = selectedColumnId == column.documentId
                 )
             }
         }
@@ -107,23 +111,22 @@ fun MyToolBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(color = MenuBackgroundGrey)
+            .background(color = colorResource(id = R.color.menu_background))
             .padding(start = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
         Text(
             text = title,
-            color = TitleGrey,
+            color = colorResource(id = R.color.title),
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp
             )
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MyBody(
-    columnId: Long,
+    columnId: String,
     homeViewModel: HomeViewModel,
     nav: NavHostController,
     columns: List<Column>,
@@ -159,7 +162,7 @@ fun MyBody(
 @Composable
 fun MyButtonAddCard(
     nav: NavHostController,
-    columnId: Long
+    columnId: String
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -186,7 +189,7 @@ fun MyButtonAddCard(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 20.dp),
-            text = "ADICIONAR CARTÃO",
+            text = stringResource(id = R.string.add_card),
             color = White,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp
@@ -207,7 +210,7 @@ fun MyListItem(
     if (isShowingDialog){
         val moveColumns = mutableListOf<Column>()
         for(column in columns){
-            if(column.id != card.columnId) moveColumns.add(column)
+            if(column.documentId != card.columnId) moveColumns.add(column)
         }
         MoveCardDialog(
             card = card,
@@ -220,7 +223,7 @@ fun MyListItem(
     Row (
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = CardBackgroundGrey, shape = RoundedCornerShape(10.dp))
+            .background(color = colorResource(id = R.color.card_background), shape = RoundedCornerShape(10.dp))
             .padding(20.dp)
             .combinedClickable(
                 onClick = {
@@ -233,8 +236,8 @@ fun MyListItem(
             )
     ) {
         Text(
-            text = card.title,
-            color = TitleGrey,
+            text = card.title ?: "",
+            color = colorResource(id = R.color.title),
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp
         )
@@ -262,7 +265,7 @@ fun MyTab(
             modifier = Modifier
                 .align(Alignment.Center),
             text = name,
-            color = if (selected) SelectedBlue else TitleGrey,
+            color = if (selected) colorResource(id = R.color.blue_selected) else colorResource(id = R.color.title),
             fontWeight = FontWeight.SemiBold,
             fontSize = 18.sp
         )
@@ -272,7 +275,7 @@ fun MyTab(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .background(
-                        color = SelectedBlue,
+                        color = colorResource(id = R.color.blue_selected),
                         shape = RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)
                     )
                     .height(3.dp)
@@ -286,10 +289,10 @@ fun MyTab(
  @Composable
 fun SetStatusBarColor(){
 
-    val statusBarLight = 0xFFF0F0F0.toInt()
-    val statusBarDark = Color.BLUE
-    val navigationBarLight = Color.BLACK
-    val navigationBarDark = Color.BLUE
+     val statusBarLight = MenuBackgroundGrey
+     val statusBarDark = MenuBackgroundDark
+     val navigationBarLight = Color.BLACK
+     val navigationBarDark = Color.BLACK
     val isDarkMode = isSystemInDarkTheme()
     val context = LocalContext.current as ComponentActivity
 
@@ -297,12 +300,12 @@ fun SetStatusBarColor(){
         context.enableEdgeToEdge(
             statusBarStyle = if (!isDarkMode) {
                 SystemBarStyle.light(
-                    statusBarLight,
-                    statusBarDark
+                    statusBarLight.hashCode(),
+                    statusBarDark.hashCode()
                 )
             } else {
                 SystemBarStyle.dark(
-                    statusBarDark
+                    statusBarDark.hashCode()
                 )
             },
             navigationBarStyle = if(!isDarkMode){

@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sg.simplekanban.ui.screens.card.CardScreen
 import com.sg.simplekanban.ui.screens.home.HomeScreen
 
 @Composable
