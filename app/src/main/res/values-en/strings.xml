@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Simple Kanban</string>
 
+    <string name="web_client_id">954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com</string>
+
+    <string name="sign_in_google">Sign in with Google</string>
     <string name="add_card">ADD CARD</string>
     <string name="to_do">TO DO</string>
     <string name="doing">DOING</string>
@@ -17,4 +20,6 @@
     <string name="card_moved">CARD MOVED TO:</string>
     <string name="move_to">Move to:</string>
     <string name="card_selected">"CARD SELECTED"</string>
+    <string name="select_account">Selecione sua conta aqui. \n
+Ao entrar, você concorda com nossa política de privacidade.</string>
 </resources>

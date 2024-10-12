@@ -8,5 +8,14 @@ class Constants {
         const val TABLE_COLUMN  = "Column"
         const val TABLE_SHARED  = "Shared"
         const val TABLE_COMMENT = "Comment"
+
+        const val SIGN_IN_REQUEST = "signInRequest"
+        const val SIGN_UP_REQUEST = "signUpRequest"
+
+        //Google User Info
+        const val EMAIL = "email"
+        const val NAME = "name"
+        const val PHOTO_URL = "photoUrl"
+        const val CREATED_AT = "createdAt"
     }
 }

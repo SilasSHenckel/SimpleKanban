@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,11 +45,9 @@ import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.MoveCardDialog
 import com.sg.simplekanban.ui.routes.AppScreen
-import com.sg.simplekanban.ui.theme.CardBackgroundGrey
 import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
 import com.sg.simplekanban.ui.theme.SelectedBlue
-import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.ui.theme.White
 
 @Composable

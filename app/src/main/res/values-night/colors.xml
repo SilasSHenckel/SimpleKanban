@@ -5,7 +5,12 @@
 
     <color name="menu_background">#FF272727</color>
     <color name="title">#FFFFFF</color>
+    <color name="text">#C6C6C6</color>
     <color name="blue_selected">#2D9FE5</color>
     <color name="card_background">#252525</color>
+    <color name="background">#1F1F1F</color>
+
+    <color name="dark_transparent">#51000000</color>
+
 
 </resources>
