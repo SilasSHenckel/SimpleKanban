@@ -44,6 +44,7 @@ import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.MoveCardDialog
+import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.routes.AppScreen
 import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
@@ -60,7 +61,7 @@ fun HomeScreen(
     val selectedColumnId = homeViewModel.selectedColumnId
     val isShowingDialog = homeViewModel.showMoveCardDialog
 
-    val columns = homeViewModel.getColumns()
+    val columns = homeViewModel.columns
 
     Box(
         modifier = Modifier
@@ -92,11 +93,21 @@ fun HomeScreen(
             for (column in columns) {
                 MyTab(
                     name = column.name ?: "",
-                    onTabClick = { homeViewModel.selectedColumnId = column.documentId ?: "" },
+                    onTabClick = {
+                        column.documentId?.let {
+                            if(it != homeViewModel.selectedColumnId){
+                                homeViewModel.selectedColumnId = it
+                                homeViewModel.getCardsByColumnId(it)
+                            }
+                        }
+                    },
                     selected = selectedColumnId == column.documentId
                 )
             }
         }
+
+        val isLoading = homeViewModel.isLoading
+        if(isLoading) MyProgressBar()
     }
 }
 
@@ -130,7 +141,7 @@ fun MyBody(
     isShowingDialog: Boolean
 ){
 
-    val cardList = homeViewModel.getCardsByColumnId(columnId)
+    val cardList = homeViewModel.cards
 
     Column(
         modifier = Modifier

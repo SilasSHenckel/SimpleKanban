@@ -2,6 +2,7 @@
     <string name="app_name">Simple Kanban</string>
 
     <string name="web_client_id">954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com</string>
+    <string name="shared_pref_key">simplekanban.MyBeautifulAndSecretKey</string>
 
     <string name="sign_in_google">ENTRAR COM GOOGLE</string>
     <string name="add_card">ADICIONAR CARTÃO</string>

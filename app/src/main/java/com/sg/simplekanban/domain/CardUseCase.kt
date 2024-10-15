@@ -12,7 +12,7 @@ class CardUseCase @Inject constructor(
         cardRepository.save(userId, kanbanId, card, onError, onSuccess)
     }
 
-    fun getCardsByColumnId(userId: String, kanbanId: String, columnId: Long, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
+    fun getCardsByColumnId(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
         cardRepository.getCardsByColumnId(userId, kanbanId, columnId, onError, onSuccess)
     }
 

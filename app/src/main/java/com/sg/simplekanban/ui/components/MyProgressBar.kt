@@ -19,6 +19,6 @@ fun MyProgressBar() {
             .background(colorResource(id = R.color.dark_transparent)),
         contentAlignment = Alignment.Center,
     ){
-        CircularProgressIndicator()
+        CircularProgressIndicator(color = colorResource(id = R.color.blue_selected))
     }
 }

@@ -17,5 +17,8 @@ class Constants {
         const val NAME = "name"
         const val PHOTO_URL = "photoUrl"
         const val CREATED_AT = "createdAt"
+
+        //Kanban
+        const val CREATION_DATE = "creationDate"
     }
 }

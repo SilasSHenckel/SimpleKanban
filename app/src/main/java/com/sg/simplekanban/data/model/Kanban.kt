@@ -8,4 +8,5 @@ data class Kanban (
 
     var name: String? = null,
     var isShared: Boolean = false,
+    var creationDate: String? = null
 )

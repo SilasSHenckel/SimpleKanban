@@ -1,13 +1,19 @@
 package com.sg.simplekanban.data.repository
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.data.constants.Constants
+import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE
 import com.sg.simplekanban.data.model.Kanban
 import javax.inject.Inject
 
-class KanbanRepository @Inject constructor(){
+class KanbanRepository @Inject constructor(
+    private val auth: FirebaseAuth,
+){
 
     fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
@@ -21,17 +27,37 @@ class KanbanRepository @Inject constructor(){
             }
     }
 
-    fun getUserKanbans(userId: String, onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
+    fun getKanbanById(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: (Kanban?) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
-            .collection(Constants.TABLE_KANBAN).get()
+            .collection(Constants.TABLE_KANBAN).document(kanbanId).get()
             .addOnFailureListener { error ->
                 onError(error)
             }
             .addOnSuccessListener { result ->
-                val cards = result.toObjects<Kanban>()
-                onSuccess(cards)
+                val card = result.toObject<Kanban>()
+                onSuccess(card)
             }
+    }
+
+    fun getCurrentUserKanbans(onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
+        val userId = auth.currentUser?.uid
+
+        if(userId != null){
+            Firebase.firestore
+                .collection(Constants.TABLE_USER).document(userId)
+                .collection(Constants.TABLE_KANBAN)
+                .orderBy(CREATION_DATE, Query.Direction.DESCENDING).get()
+                .addOnFailureListener { error ->
+                    onError(error)
+                }
+                .addOnSuccessListener { result ->
+                    val cards = result.toObjects<Kanban>()
+                    onSuccess(cards)
+                }
+        } else {
+            onError(Exception("auth user is null"))
+        }
     }
 
     fun delete(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){

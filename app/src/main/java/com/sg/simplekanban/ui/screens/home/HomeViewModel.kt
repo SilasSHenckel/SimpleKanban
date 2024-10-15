@@ -5,10 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
+import com.sg.simplekanban.domain.KanbanUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,42 +20,111 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val columnUseCase: ColumnUseCase,
-    private val cardUseCase: CardUseCase
+    private val cardUseCase: CardUseCase,
+    private val kanbanUseCase: KanbanUseCase,
+    private val appPreferences: AppPreferences
 ): ViewModel() {
+
+    var isLoading by mutableStateOf(false)
+
+    var currentKanban by mutableStateOf<Kanban?>(null)
+
+    var columns by mutableStateOf<List<Column>>(listOf())
+
+    var cards by mutableStateOf<List<Card>>(listOf())
 
     var showMoveCardDialog by mutableStateOf(false)
 
     var selectedColumnId by mutableStateOf("0")
+
+    var userId : String? = FirebaseAuth.getInstance().currentUser?.uid
+
+    init {
+        loadKanban()
+    }
+
+    fun loadKanban() = viewModelScope.launch {
+        val lastKanbanId = appPreferences.getLastKanbanId()
+        if(lastKanbanId == null){
+            isLoading = true
+            kanbanUseCase.getCurrentUserKanbans(
+                onError = { exception ->
+                    isLoading = false
+
+                },
+                onSuccess = { list ->
+                    isLoading = false
+                    if(list.isNotEmpty()) {
+                        currentKanban = list[0]
+                        appPreferences.setLastKanbanId(list[0].documentId)
+                        getColumns()
+                    }
+                }
+            )
+        } else {
+            if (userId != null) {
+                isLoading = true
+                kanbanUseCase.getKanbanById(userId!!, lastKanbanId,
+                    onError = {
+                        isLoading = false
+                    },
+                    onSuccess = { kanban ->
+                        currentKanban = kanban
+                        isLoading = false
+                        getColumns()
+                    }
+                )
+            }
+        }
+    }
 
     fun moveCardToColumn(columnId: String, card: Card) = viewModelScope.launch {
         card.columnId = columnId
 //        cardUseCase.update(card) //TODO
     }
 
-    fun getColumns() : List<Column>{
-        return listOf(
-            Column(documentId = "0", name = "TO DO", priority = 0),
-            Column(documentId = "1", name = "DOING", priority = 1),
-            Column(documentId = "2", name = "DONE", priority = 2),
-        )
+    fun getColumns() = viewModelScope.launch{
+        if(currentKanban?.documentId != null && userId != null){
+            isLoading = true
+            columnUseCase.getColumnsByKanban(
+                userId!!,
+                currentKanban!!.documentId!!,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = { list ->
+                    isLoading = false
+
+                    if (list.isNotEmpty()){
+                        list[0].documentId?.let {
+                            selectedColumnId = it
+                            getCardsByColumnId(it)
+                        }
+                    }
+
+                    columns = list
+
+                }
+            )
+        }
     }
 
-    fun getCardsByColumnId(columnId: String): List<Card>{
-//        return cardUseCase.getCardsByColumnId(columnId) //TODO
-        return listOf(
-            Card(documentId = "0", title = "Criar tela de login", columnId = "0"),
-            Card(documentId = "1", title = "Fazer rabanada com doce de leite", columnId = "1"),
-            Card(documentId = "2", title = "Fazer rabanada com doce de leite", columnId = "2"),
-            Card(documentId = "3", title = "Fazer rabanada com doce de leite", columnId = "3"),
-            Card(documentId = "4", title = "Fazer rabanada com doce de leite", columnId = "4"),
-            Card(documentId = "5", title = "Fazer rabanada com doce de leite", columnId = "5"),
-            Card(documentId = "6", title = "Criar tela de login", columnId = "6"),
-            Card(documentId = "7", title = "Fazer rabanada com doce de leite", columnId = "7"),
-            Card(documentId = "8", title = "Fazer rabanada com doce de leite", columnId = "8"),
-            Card(documentId = "9", title = "Fazer rabanada com doce de leite", columnId = "9"),
-            Card(documentId = "10", title = "Fazer rabanada com doce de leite", columnId = "10"),
-            Card(documentId = "11", title = "Fazer rabanada com doce de leite", columnId = "11"),
-        )
+    fun getCardsByColumnId(columnId: String) = viewModelScope.launch{
+        if(currentKanban?.documentId != null && userId != null){
+            isLoading = true
+            cardUseCase.getCardsByColumnId(
+                userId!!,
+                currentKanban!!.documentId!!,
+                columnId,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = { list ->
+                    isLoading = false
+                    cards = list
+                }
+            )
+        }
     }
 
 }

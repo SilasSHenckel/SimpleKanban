@@ -22,7 +22,7 @@ class CardRepository @Inject constructor(){
             }
     }
 
-    fun getCardsByColumnId(userId: String, kanbanId: String, columnId: Long, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
+    fun getCardsByColumnId(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)

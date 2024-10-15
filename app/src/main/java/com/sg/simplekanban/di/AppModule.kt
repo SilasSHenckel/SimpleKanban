@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.R
+import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_IN_REQUEST
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_UP_REQUEST
 import com.sg.simplekanban.data.repository.AuthRepository
@@ -42,6 +43,11 @@ class AppModule {
     fun provideContext(
         app: Application
     ): Context = app.applicationContext
+
+    @Provides
+    fun provideAppPreferences(
+        context: Context
+    ): AppPreferences = AppPreferences(context)
 
     @Provides
     fun provideFirebaseAuth() = Firebase.auth
