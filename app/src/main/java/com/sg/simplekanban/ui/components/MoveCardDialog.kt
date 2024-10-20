@@ -109,11 +109,8 @@ fun MoveCardDialog (
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
                     textAlign = TextAlign.End,
-
                 )
-
             }
-
         }
     }
 }

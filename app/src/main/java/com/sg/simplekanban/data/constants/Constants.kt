@@ -20,5 +20,11 @@ class Constants {
 
         //Kanban
         const val CREATION_DATE = "creationDate"
+
+        //Card
+        const val COLUMN_ID = "columnId"
+
+        //Column
+        const val PRIORITY = "priority"
     }
 }

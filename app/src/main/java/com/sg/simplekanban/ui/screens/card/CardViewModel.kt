@@ -111,6 +111,7 @@ class CardViewModel @Inject constructor(
                 onSuccess = {
                     isLoading = false
                     nav.popBackStack()
+                    nav.currentBackStackEntry?.savedStateHandle?.set("card", card)
                 }
             )
         }

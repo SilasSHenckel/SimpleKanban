@@ -9,6 +9,7 @@ import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.ui.screens.card.CardScreen
 import com.sg.simplekanban.ui.screens.home.HomeScreen
 import com.sg.simplekanban.ui.screens.auth.AuthScreen
+import com.sg.simplekanban.ui.screens.columns.ColumnsScreen
 
 @Composable
 fun NavigationHost(nav: NavHostController = rememberNavController()){
@@ -23,6 +24,9 @@ fun NavigationHost(nav: NavHostController = rememberNavController()){
         composable(route = AppScreen.Card.name + "/{columnId}" ){ params ->
             CardScreen(nav, params.arguments?.getString("columnId") ?: "0")
         }
+        composable(route = AppScreen.Columns.name){
+            ColumnsScreen(nav = nav)
+        }
     }
 
 }
@@ -30,5 +34,6 @@ fun NavigationHost(nav: NavHostController = rememberNavController()){
 enum class AppScreen{
     Auth,
     Home,
-    Card
+    Card,
+    Columns
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,6 +51,7 @@ import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.ui.components.MyProgressBar
 
 @Composable
 fun CardScreen (
@@ -73,95 +75,108 @@ fun CardScreen (
     var title by remember { mutableStateOf(TextFieldValue(initialTitle)) }
     var description by remember { mutableStateOf(TextFieldValue(initialDescription)) }
 
-   Column {
+    Box (
+        modifier = Modifier
+        .fillMaxSize()
+    ){
 
-       Box (
-           modifier = Modifier
-               .fillMaxWidth()
-               .height(60.dp)
-               .background(color = colorResource(id = R.color.menu_background)),
-           Alignment.Center
-       ){
-           Text(
-               modifier = Modifier
-                   .align(alignment = Alignment.CenterStart)
-                   .padding(start = 20.dp),
-               text = stringResource(id = R.string.create_card),
-               color = colorResource(id = R.color.title),
-               fontWeight = FontWeight.SemiBold,
-               fontSize = 20.sp
-           )
+        Column {
 
-           Row (
-               modifier = Modifier
-                   .align(alignment = Alignment.CenterEnd),
-           ){
+            Box (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .background(color = colorResource(id = R.color.menu_background)),
+                Alignment.Center
+            ){
+                Text(
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterStart)
+                        .padding(start = 20.dp),
+                    text = stringResource(id = R.string.create_card),
+                    color = colorResource(id = R.color.title),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
 
-               if(showButton){
-                   Button(
-                       onClick = {
-                           if(isCreatingCard){
-                               onSaveClick(title.text, description.text, columnId ?: "0", 3, userId, context, cardViewModel, nav)
-                           } else {
-                               onUpdateClick(card, title.text, description.text, context, cardViewModel, nav)
-                           }
-                       },
-                       colors = ButtonColors(SelectedBlue, Color.White, Purple40, Color.White)
-                   ) {
-                       Text(text = if(isCreatingCard) stringResource(id = R.string.save) else stringResource(id = R.string.update))
-                   }
-               }
+                Row (
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterEnd),
+                ){
+
+                    if(showButton){
+                        Button(
+                            onClick = {
+                                if(isCreatingCard){
+                                    onSaveClick(title.text, description.text, columnId ?: "0", 3, userId, context, cardViewModel, nav)
+                                } else {
+                                    onUpdateClick(card, title.text, description.text, context, cardViewModel, nav)
+                                }
+                            },
+                            colors = ButtonColors(SelectedBlue, Color.White, Purple40, Color.White)
+                        ) {
+                            Text(text = if(isCreatingCard) stringResource(id = R.string.save) else stringResource(id = R.string.update))
+                        }
+                    }
 
 
-               if(!isCreatingCard){
-                   IconButton(
-                       onClick = { cardViewModel.showDeleteCardDialog = true }
-                   ) {
-                       Icon(
-                           imageVector = Icons.Default.Delete,
-                           contentDescription = null,
-                           tint = colorResource(id = R.color.title)
-                       )
-                   }
-               } else {
-                   Spacer(modifier = Modifier.width(16.dp))
-               }
-           }
-       }
+                    if(!isCreatingCard){
+                        IconButton(
+                            onClick = { cardViewModel.showDeleteCardDialog = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = colorResource(id = R.color.title)
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                }
+            }
 
-       Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-       TitleTextField(
-           text = title,
-           onValueChange = { newText ->
-               if(newText.text != title.text && !showButton) showButton = true
-               title = newText
-           }
-       )
-
-       Spacer(modifier = Modifier.height(14.dp))
-
-       DescriptionTextField(
-           text = description,
-           onValueChange = { newText ->
-               if(newText.text != description.text && !showButton) showButton = true
-               description = newText
-           }
-       )
-
-   }
-
-    if(!isCreatingCard){
-        val showDeleteCardDialog = cardViewModel.showDeleteCardDialog
-        if(showDeleteCardDialog && card != null){
-            DeleteCardDialog(
-                card = card,
-                cardViewModel = cardViewModel,
-                setShowDialog = { cardViewModel.showDeleteCardDialog = it },
-                requestCloseScreen = { nav.popBackStack() }
+            TitleTextField(
+                text = title,
+                onValueChange = { newText ->
+                    if(newText.text != title.text && !showButton) showButton = true
+                    title = newText
+                }
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            DescriptionTextField(
+                text = description,
+                onValueChange = { newText ->
+                    if(newText.text != description.text && !showButton) showButton = true
+                    description = newText
+                }
+            )
+
         }
+
+        if(!isCreatingCard){
+            val showDeleteCardDialog = cardViewModel.showDeleteCardDialog
+            if(showDeleteCardDialog && card != null){
+                DeleteCardDialog(
+                    card = card,
+                    cardViewModel = cardViewModel,
+                    setShowDialog = { cardViewModel.showDeleteCardDialog = it },
+                    requestCloseScreen = {
+                        nav.popBackStack()
+                        nav.currentBackStackEntry?.savedStateHandle?.set("cardDeleted", card)
+                    }
+                )
+            }
+        }
+
+        val isLoading = cardViewModel.isLoading
+        if(isLoading) MyProgressBar()
     }
+
 }
 
 

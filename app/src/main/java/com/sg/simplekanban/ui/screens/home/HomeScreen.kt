@@ -24,7 +24,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -47,6 +50,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.ui.components.HomeOptionsDialog
 import com.sg.simplekanban.ui.components.MoveCardDialog
 import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.routes.AppScreen
@@ -65,6 +69,7 @@ fun HomeScreen(
     LaunchedEffect(key1 = Unit) {
         navBackStackEntry?.let {
             homeViewModel.addCardInList(it.savedStateHandle.get<Card>("card"))
+            homeViewModel.removeCardFromList(it.savedStateHandle.get<Card>("cardDeleted"))
         }
     }
 
@@ -72,6 +77,8 @@ fun HomeScreen(
 
     val selectedColumnId = homeViewModel.selectedColumnId
     val isShowingDialog = homeViewModel.showMoveCardDialog
+
+    val kanbanTitle = homeViewModel.currentKanban?.name ?: "Kanban 1"
 
     val columns = homeViewModel.columns
 
@@ -85,7 +92,11 @@ fun HomeScreen(
                 .align(Alignment.TopStart)
                 .fillMaxSize()
         ) {
-            MyToolBar(title = "TASKS")
+
+            MyToolBar(
+                title = kanbanTitle,
+                homeViewModel = homeViewModel
+            )
 
             MyBody(
                 nav = nav,
@@ -118,6 +129,15 @@ fun HomeScreen(
             }
         }
 
+        if(homeViewModel.showOptionsDialog){
+            HomeOptionsDialog(
+                nav = nav,
+                homeViewModel = homeViewModel,
+                setShowDialog = { homeViewModel.showOptionsDialog = it },
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp)
+            )
+        }
+
         val isLoading = homeViewModel.isLoading
         if(isLoading) MyProgressBar()
     }
@@ -126,21 +146,35 @@ fun HomeScreen(
 @Composable
 fun MyToolBar(
     title: String,
+    homeViewModel: HomeViewModel
 ){
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
             .background(color = colorResource(id = R.color.menu_background))
             .padding(start = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
     ){
         Text(
+            modifier = Modifier.align(Alignment.CenterStart),
             text = title,
             color = colorResource(id = R.color.title),
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp
             )
+
+        IconButton(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            onClick = {
+                homeViewModel.showOptionsDialog = true
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = null,
+                tint = colorResource(id = R.color.title)
+            )
+        }
     }
 }
 
@@ -247,11 +281,17 @@ fun MyListItem(
     Row (
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = colorResource(id = R.color.card_background), shape = RoundedCornerShape(10.dp))
+            .background(
+                color = colorResource(id = R.color.card_background),
+                shape = RoundedCornerShape(10.dp)
+            )
             .padding(20.dp)
             .combinedClickable(
                 onClick = {
                     CardInMemory.card = card
+                    UserInMemory.currentKanbanUserId = homeViewModel.lastKanbanUserId
+                    UserInMemory.userId = homeViewModel.userId
+                    KanbanInMemory.currentKanbanId = homeViewModel.currentKanban?.documentId
                     nav.navigate(AppScreen.Card.name + "/" + card.columnId)
                 },
                 onLongClick = {

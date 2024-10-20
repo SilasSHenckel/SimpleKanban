@@ -27,6 +27,8 @@ class HomeViewModel @Inject constructor(
 
     var isLoading by mutableStateOf(false)
 
+    var showOptionsDialog by mutableStateOf(false)
+
     var currentKanban by mutableStateOf<Kanban?>(null)
 
     var columns by mutableStateOf<List<Column>>(listOf())
@@ -84,7 +86,25 @@ class HomeViewModel @Inject constructor(
 
     fun moveCardToColumn(columnId: String, card: Card) = viewModelScope.launch {
         card.columnId = columnId
-//        cardUseCase.update(card) //TODO
+        if(currentKanban?.documentId != null && lastKanbanUserId != null){
+            isLoading = true
+            cardUseCase.updateCardColumnId(
+                lastKanbanUserId!!,
+                currentKanban!!.documentId!!,
+                card,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    isLoading = false
+                    val newList = mutableListOf<Card>()
+                    newList.addAll(cards)
+                    newList.remove(card)
+                    cards = newList
+                }
+            )
+        }
+
     }
 
     fun getColumns() = viewModelScope.launch {
@@ -131,13 +151,37 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun removeCardFromList(cardToRemove: Card?){
+        if (cardToRemove != null && selectedColumnId == cardToRemove.columnId){
+            val newList = mutableListOf<Card>()
+            newList.addAll(cards)
+            newList.remove(cardToRemove)
+
+            cards = newList
+        }
+    }
+
     fun addCardInList(newCard: Card?){
         if (newCard != null && selectedColumnId == newCard.columnId){
             val newList = mutableListOf<Card>()
             newList.addAll(cards)
-            newList.add(newCard)
+
+            val index = hasCardInList(newCard)
+
+            if(index != null) newList[index] = newCard
+            else newList.add(newCard)
+
             cards = newList
         }
+    }
+
+    fun hasCardInList(newCard: Card): Int?{
+        for((index, card) in cards.withIndex()){
+            if(card.documentId == newCard.documentId){
+                return index
+            }
+        }
+        return null
     }
 
 }

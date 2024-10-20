@@ -24,4 +24,8 @@ class CardUseCase @Inject constructor(
         cardRepository.update(userId, kanbanId, card, onError, onSuccess)
     }
 
+    fun updateCardColumnId(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+        cardRepository.updateCardColumnId(userId, kanbanId, card, onError, onSuccess)
+    }
+
 }
