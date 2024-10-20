@@ -67,9 +67,7 @@ fun DeleteCardDialog (
                         modifier = Modifier
                             .padding(horizontal = 10.dp, vertical = 10.dp)
                             .clickable {
-                                cardViewModel?.deleteCard(card)
-                                setShowDialog(false)
-                                requestCloseScreen()
+                                cardViewModel?.deleteCard(card, setShowDialog, requestCloseScreen)
                             },
                         text = stringResource(id = R.string.delete),
                         color = TitleGrey,

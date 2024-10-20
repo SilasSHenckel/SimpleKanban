@@ -1,10 +1,13 @@
 package com.sg.simplekanban.data.model
 
+import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Card (
     @DocumentId
-    val documentId : String? = null,
+    var documentId : String? = null,
 
     var title: String? = null,
     var description: String? = null,
@@ -14,4 +17,4 @@ data class Card (
     val priority : Int = 0,
     val ownerId : String? = null,
     val responsibleId : String? = null,
-)
+)  : Parcelable

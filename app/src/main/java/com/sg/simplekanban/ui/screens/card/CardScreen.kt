@@ -49,6 +49,7 @@ import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.data.inMemory.CardInMemory
+import com.sg.simplekanban.data.inMemory.UserInMemory
 
 @Composable
 fun CardScreen (
@@ -57,6 +58,7 @@ fun CardScreen (
     cardViewModel: CardViewModel = hiltViewModel(),
 ){
 
+    val userId = UserInMemory.userId
     val card = CardInMemory.card
 
     val isCreatingCard: Boolean = (card == null)
@@ -99,7 +101,7 @@ fun CardScreen (
                    Button(
                        onClick = {
                            if(isCreatingCard){
-                               onSaveClick(title.text, description.text, columnId ?: "0", 3, "botar userId aqui quando tiver", context, cardViewModel, nav)
+                               onSaveClick(title.text, description.text, columnId ?: "0", 3, userId, context, cardViewModel, nav)
                            } else {
                                onUpdateClick(card, title.text, description.text, context, cardViewModel, nav)
                            }
@@ -168,14 +170,13 @@ fun onSaveClick(
     description: String,
     columnId: String,
     priority: Int,
-    userId: String,
+    userId: String?,
     context: Context,
     cardViewModel: CardViewModel,
     nav: NavHostController,
 ){
     if(!title.isNullOrEmpty()){
-        cardViewModel.saveCard(title, description, columnId, priority, userId)
-        nav.popBackStack()
+        cardViewModel.saveCard(title, description, columnId, priority, userId, nav)
     } else {
         Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
     }
@@ -194,9 +195,10 @@ fun onUpdateClick(
             if(verifyIfHasChangesInCard(card, title, description)){
                 card.title = title
                 card.description = description
-                cardViewModel.updateCard(card)
+                cardViewModel.updateCard(card, nav)
+            } else {
+                nav.popBackStack()
             }
-            nav.popBackStack()
         } else {
             Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
         }

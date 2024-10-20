@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -38,9 +39,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.CardInMemory
+import com.sg.simplekanban.data.inMemory.KanbanInMemory
+import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.MoveCardDialog
@@ -54,8 +58,16 @@ import com.sg.simplekanban.ui.theme.White
 @Composable
 fun HomeScreen(
     nav: NavHostController,
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    navBackStackEntry: NavBackStackEntry? = null
 ) {
+
+    LaunchedEffect(key1 = Unit) {
+        navBackStackEntry?.let {
+            homeViewModel.addCardInList(it.savedStateHandle.get<Card>("card"))
+        }
+    }
+
     SetStatusBarColor()
 
     val selectedColumnId = homeViewModel.selectedColumnId
@@ -157,7 +169,7 @@ fun MyBody(
         ) {
 
             item {
-                MyButtonAddCard(nav = nav, columnId)
+                MyButtonAddCard(nav = nav, columnId, homeViewModel)
             }
 
             itemsIndexed(cardList) { index: Int, card: Card ->
@@ -170,7 +182,8 @@ fun MyBody(
 @Composable
 fun MyButtonAddCard(
     nav: NavHostController,
-    columnId: String
+    columnId: String,
+    homeViewModel: HomeViewModel
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -178,6 +191,9 @@ fun MyButtonAddCard(
         .background(color = SelectedBlue, shape = RoundedCornerShape(20.dp))
         .clickable {
             CardInMemory.card = null
+            UserInMemory.currentKanbanUserId = homeViewModel.lastKanbanUserId
+            UserInMemory.userId = homeViewModel.userId
+            KanbanInMemory.currentKanbanId = homeViewModel.currentKanban?.documentId
             nav.navigate(AppScreen.Card.name + "/" + columnId)
         },
         Alignment.Center,

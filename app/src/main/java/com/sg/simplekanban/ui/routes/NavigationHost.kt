@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.ui.screens.card.CardScreen
 import com.sg.simplekanban.ui.screens.home.HomeScreen
 import com.sg.simplekanban.ui.screens.auth.AuthScreen
@@ -16,8 +17,8 @@ fun NavigationHost(nav: NavHostController = rememberNavController()){
         composable(route = AppScreen.Auth.name) {
             AuthScreen(nav)
         }
-        composable(route = AppScreen.Home.name){
-            HomeScreen(nav)
+        composable(route = AppScreen.Home.name){ navBackResult ->
+            HomeScreen(nav = nav, navBackStackEntry = navBackResult)
         }
         composable(route = AppScreen.Card.name + "/{columnId}" ){ params ->
             CardScreen(nav, params.arguments?.getString("columnId") ?: "0")

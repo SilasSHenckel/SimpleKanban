@@ -73,5 +73,13 @@ class AppPreferences(context: Context) {
         preferenceEditor(PreferencesValues.LAST_KANBAN_ID, id)
     }
 
+    fun getLastKanbanUserId(): String? {
+        return sPreferences?.getString(PreferencesValues.LAST_KANBAN_USER_ID, null)
+    }
+
+    fun setLastKanbanUserId(id: String?) {
+        preferenceEditor(PreferencesValues.LAST_KANBAN_USER_ID, id)
+    }
+
 
 }
