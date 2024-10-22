@@ -44,6 +44,9 @@ fun ColumnsScreen(
     nav: NavHostController,
     columnsViewModel: ColumnsViewModel? = hiltViewModel()
 ) {
+
+    val columnsList = columnsViewModel?.columns ?: listOf()
+
     Box (
         modifier = Modifier.fillMaxSize()
     ){
@@ -56,10 +59,10 @@ fun ColumnsScreen(
 
         if(columnsViewModel?.showNewColumnDialog == true){
             CreateColumnDialog(
-                nav = nav,
                 columnsViewModel = columnsViewModel,
                 setShowDialog = { columnsViewModel.showNewColumnDialog = it },
-                true
+                columnsViewModel.columnToEdit,
+                columnsList.size
             )
         }
     }
@@ -125,7 +128,7 @@ fun MyBody(
             }
 
             itemsIndexed(columnsList) { index: Int, column: Column ->
-                MyListItem(column, nav = nav)
+                MyListItem(column, nav = nav, columnsViewModel)
             }
         }
     }
@@ -140,6 +143,7 @@ fun MyButtonAddColumn(
         .height(40.dp)
         .background(color = SelectedBlue, shape = RoundedCornerShape(20.dp))
         .clickable {
+            columnsViewModel?.columnToEdit = null
             columnsViewModel?.showNewColumnDialog = true
         },
         Alignment.Center,
@@ -170,6 +174,7 @@ fun MyButtonAddColumn(
 fun MyListItem(
     column: Column,
     nav: NavHostController,
+    columnsViewModel: ColumnsViewModel?
 ){
 
     Row (
@@ -181,11 +186,8 @@ fun MyListItem(
             )
             .padding(20.dp)
             .clickable {
-//                CardInMemory.card = card
-//                UserInMemory.currentKanbanUserId = homeViewModel.lastKanbanUserId
-//                UserInMemory.userId = homeViewModel.userId
-//                KanbanInMemory.currentKanbanId = homeViewModel.currentKanban?.documentId
-//                nav.navigate(AppScreen.Card.name + "/" + card.columnId)
+                columnsViewModel?.columnToEdit = column
+                columnsViewModel?.showNewColumnDialog = true
             }
     ) {
         Text(

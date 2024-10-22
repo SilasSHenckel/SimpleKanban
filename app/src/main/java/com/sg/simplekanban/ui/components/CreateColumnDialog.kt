@@ -1,5 +1,7 @@
 package com.sg.simplekanban.ui.components
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -32,8 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavHostController
+import androidx.core.content.ContextCompat
 import com.sg.simplekanban.R
+import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.screens.columns.ColumnsViewModel
 import com.sg.simplekanban.ui.theme.CancelGrey
 import com.sg.simplekanban.ui.theme.PlaceholderGrey
@@ -43,11 +47,13 @@ import com.sg.simplekanban.ui.theme.TitleGrey
 
 @Composable
 fun CreateColumnDialog (
-    nav: NavHostController,
     columnsViewModel: ColumnsViewModel?,
     setShowDialog: (Boolean) -> Unit,
-    isCreatingColumn : Boolean
+    columnToEdit : Column?,
+    priority: Int,
 ) {
+
+    val context = LocalContext.current
 
     Dialog(
         onDismissRequest = { setShowDialog(false) }
@@ -59,7 +65,7 @@ fun CreateColumnDialog (
         ) {
 
             var showButton by remember { mutableStateOf(false) }
-            var title by remember { mutableStateOf(TextFieldValue("")) }
+            var name by remember { mutableStateOf(TextFieldValue(columnToEdit?.name ?: "")) }
 
             Column(
                 modifier = Modifier.padding(40.dp)
@@ -76,10 +82,12 @@ fun CreateColumnDialog (
                 Spacer(modifier = Modifier.height(30.dp))
 
                 ColumnNameTextField(
-                    text = title,
+                    text = name,
                     onValueChange = { newText ->
-                        if(newText.text != title.text && !showButton) showButton = true
-                        if(newText.text.length < 30) title = newText
+                        if(newText.text != name.text && !showButton) showButton = true
+                        newText.text.uppercase()
+                        if(newText.text.length < 30) name = newText
+
                     }
                 )
 
@@ -108,16 +116,24 @@ fun CreateColumnDialog (
                     Button(
                         onClick = {
                             if(showButton){
-                                if (isCreatingColumn){
-
+                                if (columnToEdit == null){
+                                    if(name.text.isNotEmpty()){
+                                        columnsViewModel?.saveColumn(name.text.uppercase(), priority, onSaveColumn = {setShowDialog(false)})
+                                    } else {
+                                        Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
+                                    }
                                 } else {
-
+                                    if(name.text.isNotEmpty()){
+                                        columnsViewModel?.updateColum(columnToEdit, name.text.uppercase(), onSuccess = {setShowDialog(false)})
+                                    } else {
+                                        Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
                         },
                         colors = ButtonColors(if(showButton) SelectedBlue else colorResource(id = R.color.menu_background), if(showButton) Color.White else PlaceholderGrey, Purple40, Color.White)
                     ) {
-                        Text(text = if(isCreatingColumn) stringResource(id = R.string.save).uppercase() else stringResource(id = R.string.update).uppercase())
+                        Text(text = if(columnToEdit == null) stringResource(id = R.string.save).uppercase() else stringResource(id = R.string.update).uppercase())
                     }
 
                 }

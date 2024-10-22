@@ -25,6 +25,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
+import com.sg.simplekanban.data.inMemory.KanbanInMemory
+import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.routes.AppScreen
 import com.sg.simplekanban.ui.screens.home.HomeViewModel
 import com.sg.simplekanban.ui.theme.TitleGrey
@@ -61,6 +63,9 @@ fun HomeOptionsDialog (
                     modifier = Modifier
                         .padding(vertical = 5.dp)
                         .clickable {
+                            UserInMemory.currentKanbanUserId = homeViewModel?.lastKanbanUserId
+                            UserInMemory.userId = homeViewModel?.userId
+                            KanbanInMemory.currentKanbanId = homeViewModel?.currentKanban?.documentId
                             ColumnsInMemory.currentKanbanColumns = homeViewModel?.columns
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)

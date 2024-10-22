@@ -4,8 +4,8 @@ import com.google.firebase.firestore.DocumentId
 
 data class Column (
     @DocumentId
-    val documentId   : String? = null,
+    var documentId   : String? = null,
 
-    val name : String? = null,
+    var name : String? = null,
     val priority : Int = 0,
 )
