@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.commom.preferences.AppPreferences
+import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.model.Card
-import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
@@ -30,8 +30,6 @@ class HomeViewModel @Inject constructor(
     var showOptionsDialog by mutableStateOf(false)
 
     var currentKanban by mutableStateOf<Kanban?>(null)
-
-    var columns by mutableStateOf<List<Column>>(listOf())
 
     var cards by mutableStateOf<List<Card>>(listOf())
 
@@ -126,8 +124,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
 
-                    columns = list
-
+                    ColumnsInMemory.currentKanbanColumns = list
                 }
             )
         }

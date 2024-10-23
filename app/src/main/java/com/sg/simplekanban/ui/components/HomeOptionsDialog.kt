@@ -11,8 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,7 +29,6 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.routes.AppScreen
 import com.sg.simplekanban.ui.screens.home.HomeViewModel
-import com.sg.simplekanban.ui.theme.TitleGrey
 
 @Composable
 fun HomeOptionsDialog (
@@ -52,7 +51,7 @@ fun HomeOptionsDialog (
         Surface(
             modifier = modifier,
             shape = RoundedCornerShape(16.dp),
-            color = Color.White
+            color = colorResource(id = R.color.background)
         ) {
 
             Column(
@@ -66,12 +65,11 @@ fun HomeOptionsDialog (
                             UserInMemory.currentKanbanUserId = homeViewModel?.lastKanbanUserId
                             UserInMemory.userId = homeViewModel?.userId
                             KanbanInMemory.currentKanbanId = homeViewModel?.currentKanban?.documentId
-                            ColumnsInMemory.currentKanbanColumns = homeViewModel?.columns
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)
                         },
                     text = stringResource(id = R.string.create_column),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
                 )
@@ -85,7 +83,7 @@ fun HomeOptionsDialog (
 
                         },
                     text = stringResource(id = R.string.share),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
                 )
@@ -99,7 +97,7 @@ fun HomeOptionsDialog (
 
                         },
                     text = stringResource(id = R.string.alternate_kanban),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
                 )
@@ -113,7 +111,7 @@ fun HomeOptionsDialog (
 
                         },
                     text = stringResource(id = R.string.my_profile),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
                 )

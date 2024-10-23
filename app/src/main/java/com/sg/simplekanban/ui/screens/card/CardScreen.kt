@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -89,15 +90,37 @@ fun CardScreen (
                     .background(color = colorResource(id = R.color.menu_background)),
                 Alignment.Center
             ){
-                Text(
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterStart)
-                        .padding(start = 20.dp),
-                    text = stringResource(id = R.string.create_card),
-                    color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp
-                )
+
+                Row (
+                    modifier = Modifier.align(alignment = Alignment.CenterStart),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    IconButton(
+                        onClick = {
+                            nav.popBackStack()
+                        }
+                    ) {
+                        androidx.compose.material.Icon(
+                            imageVector = Icons.Rounded.ArrowBack,
+                            contentDescription = null,
+                            tint = colorResource(id = R.color.title)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(5.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.create_card),
+                        color = colorResource(id = R.color.title),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                }
+
+
 
                 Row (
                     modifier = Modifier

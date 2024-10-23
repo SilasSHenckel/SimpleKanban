@@ -20,11 +20,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -39,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +49,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.CardInMemory
+import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
@@ -58,6 +62,7 @@ import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
 import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.White
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -80,7 +85,7 @@ fun HomeScreen(
 
     val kanbanTitle = homeViewModel.currentKanban?.name ?: "Kanban 1"
 
-    val columns = homeViewModel.columns
+    val columns = ColumnsInMemory.currentKanbanColumns
 
     Box(
         modifier = Modifier
@@ -107,13 +112,17 @@ fun HomeScreen(
             )
         }
 
-        Row(
+        val listState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
+
+        LazyRow (
+            state = listState,
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = colorResource(id = R.color.menu_background))
-                .align(Alignment.BottomCenter)
-        ) {
-            for (column in columns) {
+            .fillMaxWidth()
+                .height(60.dp)
+            .background(color = colorResource(id = R.color.menu_background))
+            .align(Alignment.BottomCenter)) {
+            itemsIndexed(columns) { index: Int, column: Column ->
                 MyTab(
                     name = column.name ?: "",
                     onTabClick = {
@@ -121,10 +130,16 @@ fun HomeScreen(
                             if(it != homeViewModel.selectedColumnId){
                                 homeViewModel.selectedColumnId = it
                                 homeViewModel.getCardsByColumnId(it)
+
+                                val scrollIndex = if(index > 0) index - 1 else index
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(index = scrollIndex)
+                                }
                             }
                         }
                     },
-                    selected = selectedColumnId == column.documentId
+                    selected = selectedColumnId == column.documentId,
+                    listSize = columns.size
                 )
             }
         }
@@ -134,7 +149,9 @@ fun HomeScreen(
                 nav = nav,
                 homeViewModel = homeViewModel,
                 setShowDialog = { homeViewModel.showOptionsDialog = it },
-                modifier = Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp, end = 16.dp)
             )
         }
 
@@ -313,25 +330,28 @@ fun MyTab(
     name: String,
     onTabClick: () -> Unit,
     selected: Boolean,
-    widthDivisionNumber: Int = 3
+    widthDivisionNumber: Int = 3,
+    listSize: Int
 ) {
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
 
+    var widthSpaceRequired = if(listSize > 3) 20.dp else 0.dp
+
     Box(
         modifier = Modifier
             .clickable { onTabClick() }
-            .width(screenWidth / widthDivisionNumber)
+            .width((screenWidth / widthDivisionNumber) - widthSpaceRequired)
             .height(60.dp),
     ) {
         Text(
-            modifier = Modifier
-                .align(Alignment.Center),
+            modifier = Modifier.align(Alignment.Center),
             text = name,
             color = if (selected) colorResource(id = R.color.blue_selected) else colorResource(id = R.color.title),
             fontWeight = FontWeight.SemiBold,
-            fontSize = 18.sp
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
         )
 
         if (selected) {

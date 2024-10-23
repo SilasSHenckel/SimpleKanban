@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.sg.simplekanban.R
+import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.CreateColumnDialog
 import com.sg.simplekanban.ui.theme.SelectedBlue
@@ -45,7 +48,7 @@ fun ColumnsScreen(
     columnsViewModel: ColumnsViewModel? = hiltViewModel()
 ) {
 
-    val columnsList = columnsViewModel?.columns ?: listOf()
+    val columnsList = ColumnsInMemory.currentKanbanColumns
 
     Box (
         modifier = Modifier.fillMaxSize()
@@ -79,7 +82,7 @@ fun MyToolBar(
             .fillMaxWidth()
             .height(60.dp)
             .background(color = colorResource(id = R.color.menu_background))
-            .padding(start = 20.dp),
+            .padding(start = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
 
@@ -94,6 +97,8 @@ fun MyToolBar(
                 tint = colorResource(id = R.color.title)
             )
         }
+        
+        Spacer(modifier = Modifier.width(5.dp))
 
         Text(
             text = title,
@@ -110,7 +115,7 @@ fun MyBody(
     nav: NavHostController,
 ){
 
-    val columnsList = columnsViewModel?.columns ?: listOf()
+    val columnsList = ColumnsInMemory.currentKanbanColumns
 
     Column(
         modifier = Modifier.fillMaxSize()

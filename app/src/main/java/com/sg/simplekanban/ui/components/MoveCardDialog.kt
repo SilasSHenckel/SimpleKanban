@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +43,7 @@ fun MoveCardDialog (
     Dialog(onDismissRequest = { setShowDialog(false) }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White
+            color = colorResource(id = R.color.background)
         ) {
 
             Column (
@@ -54,7 +55,7 @@ fun MoveCardDialog (
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(id = R.string.card_selected),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center
@@ -65,7 +66,7 @@ fun MoveCardDialog (
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = "\"" + (card.title ?: "Criar Tela Home") + "\"",
-                    color = TextGrey,
+                    color = colorResource(id = R.color.title),
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center
                 )
@@ -74,7 +75,7 @@ fun MoveCardDialog (
 
                 Text(
                     text = stringResource(id = R.string.move_to),
-                    color = TextGrey,
+                    color = colorResource(id = R.color.text),
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp
                 )
@@ -89,7 +90,7 @@ fun MoveCardDialog (
                             Toast.makeText(context, ContextCompat.getString(context, R.string.card_moved) + " ${column.name}", Toast.LENGTH_LONG).show()
                         },
                         text = column.name ?: "",
-                        color = TitleGrey,
+                        color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp
                     )

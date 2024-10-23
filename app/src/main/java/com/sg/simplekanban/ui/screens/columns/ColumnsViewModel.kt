@@ -5,12 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
-import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
-import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.domain.ColumnUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,17 +21,9 @@ class ColumnsViewModel @Inject constructor(
 
     var isLoading by mutableStateOf(false)
 
-    var columns by mutableStateOf<List<Column>>(listOf())
-
     var showNewColumnDialog by mutableStateOf(false)
 
     var columnToEdit : Column? = null
-
-    init {
-        columns = ColumnsInMemory.currentKanbanColumns ?: listOf()
-    }
-
-
 
     fun saveColumn(
         name: String,
@@ -65,10 +54,10 @@ class ColumnsViewModel @Inject constructor(
                     column.documentId = generatedId
 
                     val list = mutableListOf<Column>()
-                    list.addAll(columns)
+                    list.addAll(ColumnsInMemory.currentKanbanColumns)
                     list.add(column)
 
-                    columns = list
+                    ColumnsInMemory.currentKanbanColumns = list
 
                     onSaveColumn(column)
                 }
@@ -97,13 +86,13 @@ class ColumnsViewModel @Inject constructor(
                     isLoading = false
 
                     val list = mutableListOf<Column>()
-                    list.addAll(columns)
+                    list.addAll(ColumnsInMemory.currentKanbanColumns)
                     list.remove(column)
                     list.add(column)
 
                     list.sortBy { it.priority }
 
-                    columns = list
+                    ColumnsInMemory.currentKanbanColumns = list
 
                     onSuccess(column)
                 }

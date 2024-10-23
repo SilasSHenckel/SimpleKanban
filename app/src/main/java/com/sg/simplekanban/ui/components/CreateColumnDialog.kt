@@ -1,6 +1,5 @@
 package com.sg.simplekanban.ui.components
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +42,6 @@ import com.sg.simplekanban.ui.theme.CancelGrey
 import com.sg.simplekanban.ui.theme.PlaceholderGrey
 import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
-import com.sg.simplekanban.ui.theme.TitleGrey
 
 @Composable
 fun CreateColumnDialog (
@@ -61,7 +59,7 @@ fun CreateColumnDialog (
 
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White
+            color = colorResource(id = R.color.background)
         ) {
 
             var showButton by remember { mutableStateOf(false) }
@@ -74,7 +72,7 @@ fun CreateColumnDialog (
                 Text(
                     modifier = Modifier.padding(start = 10.dp),
                     text = stringResource(id = R.string.create_column),
-                    color = TitleGrey,
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
                 )
@@ -86,8 +84,7 @@ fun CreateColumnDialog (
                     onValueChange = { newText ->
                         if(newText.text != name.text && !showButton) showButton = true
                         newText.text.uppercase()
-                        if(newText.text.length < 30) name = newText
-
+                        if(newText.text.length < 19) name = newText
                     }
                 )
 
