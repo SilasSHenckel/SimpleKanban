@@ -32,7 +32,7 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
 
     <string name="columns">"Colunas"</string>
     <string name="add_column">ADICIONAR COLUNA</string>
-    <string name="create_kanban">CRIAR KANBAN</string>
+    <string name="create_kanban">Criar Kanban</string>
     <string name="name">Nome</string>
 
 </resources>

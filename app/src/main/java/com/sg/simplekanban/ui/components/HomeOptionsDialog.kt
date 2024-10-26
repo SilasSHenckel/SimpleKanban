@@ -4,8 +4,10 @@ import android.view.Gravity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,7 +51,7 @@ fun HomeOptionsDialog (
         dialogWindowProvider.window.setGravity(Gravity.TOP or Gravity.END)
 
         Surface(
-            modifier = modifier,
+            modifier = modifier.width(220.dp),
             shape = RoundedCornerShape(16.dp),
             color = colorResource(id = R.color.background)
         ) {
@@ -60,11 +62,10 @@ fun HomeOptionsDialog (
 
                 Text(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-                            UserInMemory.currentKanbanUserId = homeViewModel?.lastKanbanUserId
                             UserInMemory.userId = homeViewModel?.userId
-                            KanbanInMemory.currentKanbanId = homeViewModel?.currentKanban?.documentId
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)
                         },
@@ -78,6 +79,7 @@ fun HomeOptionsDialog (
 
                 Text(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
 
@@ -92,6 +94,7 @@ fun HomeOptionsDialog (
 
                 Text(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
                             nav.navigate(AppScreen.Kanbans.name)
@@ -107,6 +110,7 @@ fun HomeOptionsDialog (
 
                 Text(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
 

@@ -68,22 +68,14 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     nav: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    navBackStackEntry: NavBackStackEntry? = null
 ) {
-
-    LaunchedEffect(key1 = Unit) {
-        navBackStackEntry?.let {
-            homeViewModel.addCardInList(it.savedStateHandle.get<Card>("card"))
-            homeViewModel.removeCardFromList(it.savedStateHandle.get<Card>("cardDeleted"))
-        }
-    }
 
     SetStatusBarColor()
 
-    val selectedColumnId = homeViewModel.selectedColumnId
+    val selectedColumnId = ColumnsInMemory.selectedColumnId
     val isShowingDialog = homeViewModel.showMoveCardDialog
 
-    val kanbanTitle = homeViewModel.currentKanban?.name ?: "Kanban 1"
+    val kanbanTitle = KanbanInMemory.currentKanban?.name ?: "Kanban 1"
 
     val columns = ColumnsInMemory.currentKanbanColumns
 
@@ -127,8 +119,8 @@ fun HomeScreen(
                     name = column.name ?: "",
                     onTabClick = {
                         column.documentId?.let {
-                            if(it != homeViewModel.selectedColumnId){
-                                homeViewModel.selectedColumnId = it
+                            if(it != ColumnsInMemory.selectedColumnId){
+                                ColumnsInMemory.selectedColumnId = it
                                 homeViewModel.getCardsByColumnId(it)
 
                                 val scrollIndex = if(index > 0) index - 1 else index
@@ -204,7 +196,7 @@ fun MyBody(
     isShowingDialog: Boolean
 ){
 
-    val cardList = homeViewModel.cards
+    val cardList = CardInMemory.cards
 
     Column(
         modifier = Modifier
@@ -242,9 +234,7 @@ fun MyButtonAddCard(
         .background(color = SelectedBlue, shape = RoundedCornerShape(20.dp))
         .clickable {
             CardInMemory.card = null
-            UserInMemory.currentKanbanUserId = homeViewModel.lastKanbanUserId
             UserInMemory.userId = homeViewModel.userId
-            KanbanInMemory.currentKanbanId = homeViewModel.currentKanban?.documentId
             nav.navigate(AppScreen.Card.name + "/" + columnId)
         },
         Alignment.Center,
@@ -306,9 +296,7 @@ fun MyListItem(
             .combinedClickable(
                 onClick = {
                     CardInMemory.card = card
-                    UserInMemory.currentKanbanUserId = homeViewModel.lastKanbanUserId
                     UserInMemory.userId = homeViewModel.userId
-                    KanbanInMemory.currentKanbanId = homeViewModel.currentKanban?.documentId
                     nav.navigate(AppScreen.Card.name + "/" + card.columnId)
                 },
                 onLongClick = {

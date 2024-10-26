@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.sg.simplekanban.commom.util.DateUtil
+import com.sg.simplekanban.data.inMemory.CardInMemory
+import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
@@ -35,7 +37,7 @@ class CardViewModel @Inject constructor(
 
         isLoading = true
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanbanId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null){
             val card = Card(
@@ -60,8 +62,8 @@ class CardViewModel @Inject constructor(
 
                     card.documentId = generatedId
 
+                    addCardInList(card)
                     nav.popBackStack()
-                    nav.currentBackStackEntry?.savedStateHandle?.set("card", card)
                 }
             )
         }
@@ -75,7 +77,7 @@ class CardViewModel @Inject constructor(
 
         isLoading = true
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanbanId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null){
             cardUseCase.delete(
@@ -98,7 +100,7 @@ class CardViewModel @Inject constructor(
 
         isLoading = true
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanbanId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null){
             cardUseCase.update(
@@ -110,10 +112,44 @@ class CardViewModel @Inject constructor(
                 },
                 onSuccess = {
                     isLoading = false
+
+                    addCardInList(card)
                     nav.popBackStack()
-                    nav.currentBackStackEntry?.savedStateHandle?.set("card", card)
                 }
             )
+        }
+    }
+
+    fun addCardInList(newCard: Card?){
+        if (newCard != null && ColumnsInMemory.selectedColumnId == newCard.columnId){
+            val newList = mutableListOf<Card>()
+            newList.addAll(CardInMemory.cards)
+
+            val index = hasCardInList(newCard)
+
+            if(index != null) newList[index] = newCard
+            else newList.add(newCard)
+
+            CardInMemory.cards = newList
+        }
+    }
+
+    fun hasCardInList(newCard: Card): Int?{
+        for((index, card) in CardInMemory.cards.withIndex()){
+            if(card.documentId == newCard.documentId){
+                return index
+            }
+        }
+        return null
+    }
+
+    fun removeCardFromList(cardToRemove: Card?){
+        if (cardToRemove != null && ColumnsInMemory.selectedColumnId == cardToRemove.columnId){
+            val newList = mutableListOf<Card>()
+            newList.addAll(CardInMemory.cards)
+            newList.remove(cardToRemove)
+
+            CardInMemory.cards = newList
         }
     }
 

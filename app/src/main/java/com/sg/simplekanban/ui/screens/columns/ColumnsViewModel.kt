@@ -32,7 +32,7 @@ class ColumnsViewModel @Inject constructor(
     ) = viewModelScope.launch {
 
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanbanId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null){
             isLoading = true
@@ -68,7 +68,7 @@ class ColumnsViewModel @Inject constructor(
     fun updateColum(column: Column, name: String, onSuccess: (Column) -> Unit) = viewModelScope.launch {
 
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanbanId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null){
             isLoading = true

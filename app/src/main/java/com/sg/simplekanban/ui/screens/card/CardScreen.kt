@@ -189,8 +189,8 @@ fun CardScreen (
                     cardViewModel = cardViewModel,
                     setShowDialog = { cardViewModel.showDeleteCardDialog = it },
                     requestCloseScreen = {
+                        cardViewModel.removeCardFromList(card)
                         nav.popBackStack()
-                        nav.currentBackStackEntry?.savedStateHandle?.set("cardDeleted", card)
                     }
                 )
             }

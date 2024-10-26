@@ -7,9 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.commom.preferences.AppPreferences
+import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
+import com.sg.simplekanban.data.inMemory.KanbanInMemory
+import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
-import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
 import com.sg.simplekanban.domain.KanbanUseCase
@@ -29,17 +31,9 @@ class HomeViewModel @Inject constructor(
 
     var showOptionsDialog by mutableStateOf(false)
 
-    var currentKanban by mutableStateOf<Kanban?>(null)
-
-    var cards by mutableStateOf<List<Card>>(listOf())
-
     var showMoveCardDialog by mutableStateOf(false)
 
-    var selectedColumnId by mutableStateOf("0")
-
     var userId : String? = FirebaseAuth.getInstance().currentUser?.uid
-
-    var lastKanbanUserId : String? = null
 
     init {
         loadKanban()
@@ -47,7 +41,7 @@ class HomeViewModel @Inject constructor(
 
     fun loadKanban() = viewModelScope.launch {
         val lastKanbanId = appPreferences.getLastKanbanId()
-        lastKanbanUserId = appPreferences.getLastKanbanUserId()
+        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
 
         if(lastKanbanId == null || lastKanbanUserId == null){
             isLoading = true
@@ -59,22 +53,26 @@ class HomeViewModel @Inject constructor(
                 onSuccess = { list ->
                     isLoading = false
                     if(list.isNotEmpty()) {
-                        currentKanban = list[0]
+                        KanbanInMemory.currentKanban = list[0]
+                        UserInMemory.currentKanbanUserId = userId
+
                         appPreferences.setLastKanbanId(list[0].documentId)
-                        appPreferences.setLastKanbanId(userId)
-                        lastKanbanUserId = userId
+                        appPreferences.setLastKanbanUserId(userId)
+
                         getColumns()
                     }
                 }
             )
         } else {
             isLoading = true
-            kanbanUseCase.getKanbanById(lastKanbanUserId!!, lastKanbanId,
+            kanbanUseCase.getKanbanById(lastKanbanUserId, lastKanbanId,
                 onError = {
                     isLoading = false
                 },
                 onSuccess = { kanban ->
-                    currentKanban = kanban
+                    KanbanInMemory.currentKanban = kanban
+                    UserInMemory.currentKanbanUserId = lastKanbanUserId
+
                     isLoading = false
                     getColumns()
                 }
@@ -84,11 +82,14 @@ class HomeViewModel @Inject constructor(
 
     fun moveCardToColumn(columnId: String, card: Card) = viewModelScope.launch {
         card.columnId = columnId
-        if(currentKanban?.documentId != null && lastKanbanUserId != null){
+
+        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+
+        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
             isLoading = true
             cardUseCase.updateCardColumnId(
-                lastKanbanUserId!!,
-                currentKanban!!.documentId!!,
+                lastKanbanUserId,
+                KanbanInMemory.currentKanban!!.documentId!!,
                 card,
                 onError = {
                     isLoading = false
@@ -96,9 +97,9 @@ class HomeViewModel @Inject constructor(
                 onSuccess = {
                     isLoading = false
                     val newList = mutableListOf<Card>()
-                    newList.addAll(cards)
+                    newList.addAll(CardInMemory.cards)
                     newList.remove(card)
-                    cards = newList
+                    CardInMemory.cards = newList
                 }
             )
         }
@@ -106,11 +107,14 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getColumns() = viewModelScope.launch {
-        if(currentKanban?.documentId != null && lastKanbanUserId != null){
+
+        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+
+        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
             isLoading = true
             columnUseCase.getColumnsByKanban(
-                lastKanbanUserId!!,
-                currentKanban!!.documentId!!,
+                lastKanbanUserId,
+                KanbanInMemory.currentKanban!!.documentId!!,
                 onError = {
                     isLoading = false
                 },
@@ -119,7 +123,7 @@ class HomeViewModel @Inject constructor(
 
                     if (list.isNotEmpty()){
                         list[0].documentId?.let {
-                            selectedColumnId = it
+                            ColumnsInMemory.selectedColumnId = it
                             getCardsByColumnId(it)
                         }
                     }
@@ -131,54 +135,24 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getCardsByColumnId(columnId: String) = viewModelScope.launch{
-        if(currentKanban?.documentId != null && lastKanbanUserId != null){
+
+        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+
+        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
             isLoading = true
             cardUseCase.getCardsByColumnId(
-                lastKanbanUserId!!,
-                currentKanban!!.documentId!!,
+                lastKanbanUserId,
+                KanbanInMemory.currentKanban!!.documentId!!,
                 columnId,
                 onError = {
                     isLoading = false
                 },
                 onSuccess = { list ->
                     isLoading = false
-                    cards = list
+                    CardInMemory.cards = list
                 }
             )
         }
-    }
-
-    fun removeCardFromList(cardToRemove: Card?){
-        if (cardToRemove != null && selectedColumnId == cardToRemove.columnId){
-            val newList = mutableListOf<Card>()
-            newList.addAll(cards)
-            newList.remove(cardToRemove)
-
-            cards = newList
-        }
-    }
-
-    fun addCardInList(newCard: Card?){
-        if (newCard != null && selectedColumnId == newCard.columnId){
-            val newList = mutableListOf<Card>()
-            newList.addAll(cards)
-
-            val index = hasCardInList(newCard)
-
-            if(index != null) newList[index] = newCard
-            else newList.add(newCard)
-
-            cards = newList
-        }
-    }
-
-    fun hasCardInList(newCard: Card): Int?{
-        for((index, card) in cards.withIndex()){
-            if(card.documentId == newCard.documentId){
-                return index
-            }
-        }
-        return null
     }
 
 }

@@ -4,7 +4,7 @@ import com.google.firebase.firestore.DocumentId
 
 data class Kanban (
     @DocumentId
-    val documentId : String? = null,
+    var documentId : String? = null,
 
     var name: String? = null,
     var isShared: Boolean = false,

@@ -7,4 +7,5 @@ import com.sg.simplekanban.data.model.Column
 
 object ColumnsInMemory{
     var currentKanbanColumns by mutableStateOf<List<Column>>(listOf())
+    var selectedColumnId by mutableStateOf("0")
 }
