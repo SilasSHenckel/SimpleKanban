@@ -32,5 +32,6 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
 
     <string name="columns">"Columns"</string>
     <string name="add_column">ADD COLUMN</string>
+    <string name="create_kanban">CREATE KANBAN</string>
     <string name="name">Name</string>
 </resources>

@@ -111,7 +111,7 @@ fun MyButtonAddKanban(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 20.dp),
-            text = stringResource(id = R.string.add_column),
+            text = stringResource(id = R.string.create_kanban),
             color = White,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp
