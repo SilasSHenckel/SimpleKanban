@@ -10,6 +10,7 @@ import com.sg.simplekanban.ui.screens.card.CardScreen
 import com.sg.simplekanban.ui.screens.home.HomeScreen
 import com.sg.simplekanban.ui.screens.auth.AuthScreen
 import com.sg.simplekanban.ui.screens.columns.ColumnsScreen
+import com.sg.simplekanban.ui.screens.kanban.KanbanScreen
 
 @Composable
 fun NavigationHost(nav: NavHostController = rememberNavController()){
@@ -27,6 +28,9 @@ fun NavigationHost(nav: NavHostController = rememberNavController()){
         composable(route = AppScreen.Columns.name){
             ColumnsScreen(nav = nav)
         }
+        composable(route = AppScreen.Kanbans.name) {
+            KanbanScreen(nav = nav)
+        }
     }
 
 }
@@ -35,5 +39,6 @@ enum class AppScreen{
     Auth,
     Home,
     Card,
-    Columns
+    Columns,
+    Kanbans
 }

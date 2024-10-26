@@ -68,7 +68,7 @@ fun HomeOptionsDialog (
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)
                         },
-                    text = stringResource(id = R.string.create_column),
+                    text = stringResource(id = R.string.manage_columns),
                     color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
@@ -94,7 +94,8 @@ fun HomeOptionsDialog (
                     modifier = Modifier
                         .padding(vertical = 5.dp)
                         .clickable {
-
+                            nav.navigate(AppScreen.Kanbans.name)
+                            setShowDialog(false)
                         },
                     text = stringResource(id = R.string.alternate_kanban),
                     color = colorResource(id = R.color.title),

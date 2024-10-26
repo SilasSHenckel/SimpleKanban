@@ -25,6 +25,7 @@
 Ao entrar, você concorda com nossa política de privacidade.</string>
 
     <string name="create_column">"Create Column"</string>
+    <string name="manage_columns">"Manage Columns"</string>
     <string name="share">"Share"</string>
     <string name="alternate_kanban">"Toggle Kanban"</string>
     <string name="my_profile">"My Profile"</string>
