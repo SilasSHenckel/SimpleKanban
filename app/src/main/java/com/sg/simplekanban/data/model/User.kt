@@ -8,5 +8,8 @@ data class User (
 
     var name: String? = null,
     var email: String? = null,
-    var photoUrl : Long = 0,
+    var photoUrl : String? = null,
+
+    //key -> kanbanId, value -> UserId
+    var sharedWithMe: HashMap<String, String>? = null
 )

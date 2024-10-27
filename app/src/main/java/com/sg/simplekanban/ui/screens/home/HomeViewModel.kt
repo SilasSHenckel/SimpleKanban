@@ -1,20 +1,26 @@
 package com.sg.simplekanban.ui.screens.home
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
 import com.sg.simplekanban.domain.KanbanUseCase
+import com.sg.simplekanban.domain.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,14 +30,19 @@ class HomeViewModel @Inject constructor(
     private val columnUseCase: ColumnUseCase,
     private val cardUseCase: CardUseCase,
     private val kanbanUseCase: KanbanUseCase,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val userUseCase: UserUseCase
 ): ViewModel() {
 
     var isLoading by mutableStateOf(false)
 
     var showOptionsDialog by mutableStateOf(false)
 
+    var showShareDialog by mutableStateOf(false)
+
     var showMoveCardDialog by mutableStateOf(false)
+
+    var userFounded by mutableStateOf<User?>(null)
 
     var userId : String? = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -150,6 +161,63 @@ class HomeViewModel @Inject constructor(
                 onSuccess = { list ->
                     isLoading = false
                     CardInMemory.cards = list
+                }
+            )
+        }
+    }
+
+    fun getUserByEmail(email: String, onSuccess: () -> Unit) = viewModelScope.launch {
+        isLoading = true
+        userUseCase.getUserByEmail(
+            email,
+            onSuccess = {
+                isLoading = false
+                userFounded = it
+                onSuccess()
+            },
+            onError = {
+                isLoading = false
+            }
+        )
+    }
+
+    fun shareKanbanWithUser(user: User, context: Context) = viewModelScope.launch{
+        val kanban = KanbanInMemory.currentKanban
+        val kanbanUserId = UserInMemory.currentKanbanUserId
+
+        if(kanban != null && userId != null){
+            val sharedList = kanban.sharedWithUsers ?: hashMapOf()
+            if(!sharedList.containsKey(user.documentId) && user.documentId != null && user.email != null){
+                sharedList[user.documentId] = user.email!!
+            }
+            kanban.sharedWithUsers = sharedList
+            kanban.isShared = true
+
+            isLoading = true
+            kanbanUseCase.updateKanbanShared(
+                userId!!,
+                kanban,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    if(kanbanUserId != null){
+                        val sharedWithMe = user.sharedWithMe ?: hashMapOf()
+                        sharedWithMe[kanban.documentId!!] = kanbanUserId
+                        user.sharedWithMe = sharedWithMe
+
+                        userUseCase.updateUserSharedKanbans(
+                            user,
+                            onError = {
+                                isLoading = false
+                            },
+                            onSuccess = {
+                                isLoading = false
+                                userFounded = null
+                                Toast.makeText(context, ContextCompat.getString(context, R.string.user_added), Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
                 }
             )
         }

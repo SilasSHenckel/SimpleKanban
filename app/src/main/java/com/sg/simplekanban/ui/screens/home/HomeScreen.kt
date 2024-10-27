@@ -57,6 +57,7 @@ import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.ui.components.HomeOptionsDialog
 import com.sg.simplekanban.ui.components.MoveCardDialog
 import com.sg.simplekanban.ui.components.MyProgressBar
+import com.sg.simplekanban.ui.components.ShareKanbanDialog
 import com.sg.simplekanban.ui.routes.AppScreen
 import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
@@ -144,6 +145,13 @@ fun HomeScreen(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 16.dp, end = 16.dp)
+            )
+        }
+
+        if(homeViewModel.showShareDialog){
+            ShareKanbanDialog(
+                homeViewModel = homeViewModel,
+                setShowDialog = { homeViewModel.showShareDialog = it },
             )
         }
 

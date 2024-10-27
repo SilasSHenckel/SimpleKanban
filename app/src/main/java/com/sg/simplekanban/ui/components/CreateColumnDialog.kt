@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Surface
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -144,6 +146,8 @@ fun CreateColumnDialog (
 fun ColumnNameTextField(
     text: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
+    placeholderText: String = stringResource(id = R.string.name),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 ) {
     TextField(
         modifier = Modifier
@@ -159,10 +163,11 @@ fun ColumnNameTextField(
         shape = RoundedCornerShape(50),
         value = text,
         onValueChange = { onValueChange(it) },
+        keyboardOptions = keyboardOptions,
         placeholder = {
             Text(
                 modifier = Modifier.padding(start = 5.dp),
-                text = stringResource(id = R.string.name),
+                text = placeholderText,
                 color = PlaceholderGrey,
                 fontWeight = FontWeight.Medium,
                 fontSize = 18.sp,

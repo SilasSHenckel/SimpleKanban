@@ -25,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
@@ -77,20 +78,23 @@ fun HomeOptionsDialog (
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .clickable {
+                if(UserInMemory.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                            .clickable {
+                                homeViewModel?.showShareDialog = true
+                                setShowDialog(false)
+                            },
+                        text = stringResource(id = R.string.share),
+                        color = colorResource(id = R.color.title),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                    )
 
-                        },
-                    text = stringResource(id = R.string.share),
-                    color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
 
                 Text(
                     modifier = Modifier

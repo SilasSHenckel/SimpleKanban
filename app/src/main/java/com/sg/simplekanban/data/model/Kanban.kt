@@ -8,5 +8,9 @@ data class Kanban (
 
     var name: String? = null,
     var isShared: Boolean = false,
-    var creationDate: String? = null
+    var creationDate: String? = null,
+
+    //key -> userId, value -> userEmail
+    var sharedWithUsers: HashMap<String, String>? = null
+
 )

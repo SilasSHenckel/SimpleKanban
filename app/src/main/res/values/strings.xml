@@ -34,5 +34,11 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="add_column">ADICIONAR COLUNA</string>
     <string name="create_kanban">Criar Kanban</string>
     <string name="name">Nome</string>
+    <string name="email">Email</string>
+    <string name="search_user">Buscar Usuario</string>
+    <string name="invalid_email">Email Invalido</string>
+    <string name="user_founded">Usuario Encontrado</string>
+    <string name="kanban_members">Membros do Quadro</string>
+    <string name="user_added">Usuario Adicionado!</string>
 
 </resources>

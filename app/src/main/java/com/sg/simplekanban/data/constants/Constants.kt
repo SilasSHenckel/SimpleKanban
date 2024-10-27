@@ -17,9 +17,12 @@ class Constants {
         const val NAME = "name"
         const val PHOTO_URL = "photoUrl"
         const val CREATED_AT = "createdAt"
+        const val SHARED_WITH_ME = "sharedWithMe"
 
         //Kanban
         const val CREATION_DATE = "creationDate"
+        const val IS_SHARED = "isShared"
+        const val SHARED_WITH_USERS = "sharedWithUsers"
 
         //Card
         const val COLUMN_ID = "columnId"
