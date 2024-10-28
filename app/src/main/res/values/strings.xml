@@ -29,6 +29,7 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="share">"Compartilhar"</string>
     <string name="alternate_kanban">"Alternar Kanban"</string>
     <string name="my_profile">"Meu Perfil"</string>
+    <string name="change_kanban_name">"Editar Nome"</string>
 
     <string name="columns">"Colunas"</string>
     <string name="add_column">ADICIONAR COLUNA</string>
@@ -40,5 +41,6 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="user_founded">Usuario Encontrado</string>
     <string name="kanban_members">Membros do Quadro</string>
     <string name="user_added">Usuario Adicionado!</string>
+    <string name="user_not_found">Usuário não encontrado!</string>
 
 </resources>

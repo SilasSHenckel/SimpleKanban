@@ -10,13 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,9 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,20 +33,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.model.Column
-import com.sg.simplekanban.ui.screens.columns.ColumnsViewModel
+import com.sg.simplekanban.data.model.Kanban
+import com.sg.simplekanban.ui.screens.home.HomeViewModel
+import com.sg.simplekanban.ui.screens.kanban.KanbanViewModel
 import com.sg.simplekanban.ui.theme.CancelGrey
 import com.sg.simplekanban.ui.theme.PlaceholderGrey
 import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
 
 @Composable
-fun CreateColumnDialog (
-    columnsViewModel: ColumnsViewModel?,
+fun EditKanbanNameDialog (
+    kanban: Kanban,
+    homeViewModel: HomeViewModel?,
     setShowDialog: (Boolean) -> Unit,
-    columnToEdit : Column?,
-    priority: Int,
 ) {
+
+    val kanbanName = kanban.name
 
     val context = LocalContext.current
 
@@ -65,7 +62,7 @@ fun CreateColumnDialog (
         ) {
 
             var showButton by remember { mutableStateOf(false) }
-            var name by remember { mutableStateOf(TextFieldValue(columnToEdit?.name ?: "")) }
+            var name by remember { mutableStateOf(TextFieldValue(kanbanName ?: "")) }
 
             Column(
                 modifier = Modifier.padding(40.dp)
@@ -73,7 +70,7 @@ fun CreateColumnDialog (
 
                 Text(
                     modifier = Modifier.padding(start = 10.dp),
-                    text = stringResource(id = R.string.create_column),
+                    text = stringResource(id = R.string.change_kanban_name),
                     color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
@@ -85,8 +82,7 @@ fun CreateColumnDialog (
                     text = name,
                     onValueChange = { newText ->
                         if(newText.text != name.text && !showButton) showButton = true
-                        newText.text.uppercase()
-                        if(newText.text.length < 19) name = newText
+                        if(newText.text.length < 20) name = newText
                     }
                 )
 
@@ -115,64 +111,22 @@ fun CreateColumnDialog (
                     Button(
                         onClick = {
                             if(showButton){
-                                if (columnToEdit == null){
-                                    if(name.text.isNotEmpty()){
-                                        columnsViewModel?.saveColumn(name.text.uppercase(), priority, onSaveColumn = {setShowDialog(false)})
-                                    } else {
-                                        Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
-                                    }
+                                if(name.text.isNotEmpty() && name.text != kanbanName){
+                                    kanban.name = name.text
+                                    homeViewModel?.updateKanbanName(kanban, onSuccess = {
+                                        setShowDialog(false)
+                                    })
                                 } else {
-                                    if(name.text.isNotEmpty()){
-                                        columnsViewModel?.updateColum(columnToEdit, name.text.uppercase(), onSuccess = {setShowDialog(false)})
-                                    } else {
-                                        Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
-                                    }
+                                    Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
                                 }
                             }
                         },
                         colors = ButtonColors(if(showButton) SelectedBlue else colorResource(id = R.color.menu_background), if(showButton) Color.White else PlaceholderGrey, Purple40, Color.White)
                     ) {
-                        Text(text = if(columnToEdit == null) stringResource(id = R.string.save).uppercase() else stringResource(id = R.string.update).uppercase())
+                        Text(text =  stringResource(id = R.string.save).uppercase())
                     }
-
                 }
-
             }
         }
     }
-}
-
-@Composable
-fun MyTextField(
-    text: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    placeholderText: String = stringResource(id = R.string.name),
-    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-) {
-    TextField(
-        modifier = Modifier
-            .width(370.dp)
-            .padding(start = 5.dp),
-        textStyle = TextStyle(fontWeight = FontWeight.Medium, fontSize = 16.sp),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = colorResource(id = R.color.menu_background),
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            focusedTextColor = colorResource(id = R.color.title)
-        ),
-        shape = RoundedCornerShape(50),
-        value = text,
-        onValueChange = { onValueChange(it) },
-        keyboardOptions = keyboardOptions,
-        placeholder = {
-            Text(
-                modifier = Modifier.padding(start = 5.dp),
-                text = placeholderText,
-                color = PlaceholderGrey,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-            )
-        },
-        maxLines = 1,
-    )
 }

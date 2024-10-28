@@ -9,6 +9,7 @@ import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE
 import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
+import com.sg.simplekanban.data.constants.Constants.Companion.NAME
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
 import com.sg.simplekanban.data.model.Kanban
 import javax.inject.Inject
@@ -78,6 +79,18 @@ class KanbanRepository @Inject constructor(
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).set(kanban)
+            .addOnFailureListener { error ->
+                onError(error)
+            }
+            .addOnSuccessListener {
+                onSuccess()
+            }
+    }
+
+    fun updateKanbanName(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+        Firebase.firestore
+            .collection(Constants.TABLE_USER).document(userId)
+            .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).update(NAME, kanban.name)
             .addOnFailureListener { error ->
                 onError(error)
             }

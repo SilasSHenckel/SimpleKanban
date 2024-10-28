@@ -54,6 +54,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.ui.components.EditKanbanNameDialog
 import com.sg.simplekanban.ui.components.HomeOptionsDialog
 import com.sg.simplekanban.ui.components.MoveCardDialog
 import com.sg.simplekanban.ui.components.MyProgressBar
@@ -153,6 +154,19 @@ fun HomeScreen(
                 homeViewModel = homeViewModel,
                 setShowDialog = { homeViewModel.showShareDialog = it },
             )
+        }
+
+        if(homeViewModel.showEditNameDialog){
+
+            val kanban = KanbanInMemory.currentKanban
+
+            if(kanban != null){
+                EditKanbanNameDialog(
+                    kanban = kanban,
+                    homeViewModel = homeViewModel,
+                    setShowDialog = { homeViewModel.showEditNameDialog = it },
+                )
+            }
         }
 
         val isLoading = homeViewModel.isLoading

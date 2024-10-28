@@ -73,7 +73,7 @@ fun CreateKanbanDialog (
 
                 Spacer(modifier = Modifier.height(30.dp))
 
-                ColumnNameTextField(
+                MyTextField(
                     text = name,
                     onValueChange = { newText ->
                         if(newText.text != name.text && !showButton) showButton = true

@@ -66,6 +66,22 @@ fun HomeOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
+                            homeViewModel?.showEditNameDialog = true
+                            setShowDialog(false)
+                        },
+                    text = stringResource(id = R.string.change_kanban_name),
+                    color = colorResource(id = R.color.title),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
+                        .clickable {
                             UserInMemory.userId = homeViewModel?.userId
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)

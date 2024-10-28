@@ -43,7 +43,7 @@ class UserRepository @Inject constructor(){
             }
             .addOnSuccessListener { result ->
                 val user = result.toObjects<User>()
-                onSuccess(user[0])
+                onSuccess(if(user.isNotEmpty()) user[0] else null)
             }
     }
 

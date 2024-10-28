@@ -5,6 +5,7 @@ import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
+import com.sg.simplekanban.data.constants.Constants.Companion.NAME
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.repository.KanbanRepository
@@ -32,6 +33,10 @@ class KanbanUseCase @Inject constructor(
 
     fun update(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         kanbanRepository.update(userId, kanban, onError, onSuccess)
+    }
+
+    fun updateKanbanName(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+        kanbanRepository.updateKanbanName(userId, kanban, onError, onSuccess)
     }
 
     fun updateKanbanShared(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit ){

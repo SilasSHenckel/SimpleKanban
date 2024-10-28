@@ -16,6 +16,7 @@ import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
@@ -39,6 +40,8 @@ class HomeViewModel @Inject constructor(
     var showOptionsDialog by mutableStateOf(false)
 
     var showShareDialog by mutableStateOf(false)
+
+    var showEditNameDialog by mutableStateOf(false)
 
     var showMoveCardDialog by mutableStateOf(false)
 
@@ -166,13 +169,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getUserByEmail(email: String, onSuccess: () -> Unit) = viewModelScope.launch {
+    fun getUserByEmail(email: String, onSuccess: () -> Unit, context: Context) = viewModelScope.launch {
         isLoading = true
         userUseCase.getUserByEmail(
             email,
             onSuccess = {
                 isLoading = false
                 userFounded = it
+                if(userFounded == null){
+                    Toast.makeText(context, ContextCompat.getString(context, R.string.user_not_found), Toast.LENGTH_LONG).show()
+                }
                 onSuccess()
             },
             onError = {
@@ -221,6 +227,25 @@ class HomeViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    fun updateKanbanName(kanban: Kanban, onSuccess: () -> Unit) = viewModelScope.launch{
+        val kanbanUserId = UserInMemory.currentKanbanUserId
+        if(kanbanUserId != null){
+            isLoading = true
+            kanbanUseCase.updateKanbanName(
+                kanbanUserId,
+                kanban,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    isLoading = false
+                    onSuccess()
+                }
+            )
+        }
+
     }
 
 }

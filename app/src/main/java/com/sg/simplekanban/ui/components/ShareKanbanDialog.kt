@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
@@ -41,6 +45,7 @@ import com.sg.simplekanban.ui.theme.PlaceholderGrey
 import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ShareKanbanDialog (
     homeViewModel: HomeViewModel?,
@@ -62,7 +67,7 @@ fun ShareKanbanDialog (
             var email by remember { mutableStateOf(TextFieldValue("")) }
 
             Column(
-                modifier = Modifier.padding(40.dp)
+                modifier = Modifier.padding(horizontal = 30.dp, vertical = 40.dp)
             ) {
 
                 Text(
@@ -73,9 +78,9 @@ fun ShareKanbanDialog (
                     fontSize = 24.sp,
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                ColumnNameTextField(
+                MyTextField(
                     text = email,
                     onValueChange = { newText ->
                         if(newText.text != email.text && !showButton) showButton = true
@@ -86,7 +91,7 @@ fun ShareKanbanDialog (
                 )
 
                 if(showButton){
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Row (
                         modifier = Modifier.width(350.dp),
@@ -104,7 +109,8 @@ fun ShareKanbanDialog (
                                                     onSuccess = {
                                                         email = TextFieldValue("")
                                                         showButton = false
-                                                    }
+                                                    },
+                                                    context
                                                 )
                                             } else {
                                                 Toast.makeText(context, ContextCompat.getString(context, R.string.invalid_email), Toast.LENGTH_LONG).show()
@@ -128,7 +134,7 @@ fun ShareKanbanDialog (
 
                 if(userFounded != null){
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
                     Text(
                         modifier = Modifier.padding(start = 10.dp),
@@ -138,13 +144,23 @@ fun ShareKanbanDialog (
                         fontSize = 20.sp,
                     )
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    Row (
-                        modifier = Modifier.width(350.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                        ){
+                    Row {
+
+                        if(userFounded.photoUrl != null){
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            GlideImage(
+                                model = userFounded.photoUrl,
+                                contentDescription = "user",
+                                modifier = Modifier.size(30.dp).clip(RoundedCornerShape(15.dp)),
+                            )
+
+                            Spacer(modifier = Modifier.width(5.dp))
+                        }
+
                         Text(
                             modifier = Modifier.padding(start = 10.dp),
                             text = userFounded.email ?: "",
@@ -152,22 +168,27 @@ fun ShareKanbanDialog (
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
                         )
-
-                        Button(
-                            modifier = Modifier.height(40.dp),
-                            onClick = {
-                                homeViewModel.shareKanbanWithUser(userFounded, context)
-                            },
-                            colors = ButtonColors( SelectedBlue, Color.White , Purple40, Color.White)
-                        ) {
-                            Text(text =  stringResource(id = R.string.share).uppercase())
-                        }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        modifier = Modifier
+                            .height(36.dp)
+                            .align(Alignment.End),
+                        onClick = {
+                            homeViewModel.shareKanbanWithUser(userFounded, context)
+                        },
+                        colors = ButtonColors( SelectedBlue, Color.White , Purple40, Color.White)
+                    ) {
+                        Text(text =  stringResource(id = R.string.share).uppercase())
+                    }
+
                 }
 
                 val sharedWithUsers = KanbanInMemory.currentKanban?.sharedWithUsers
                 if(sharedWithUsers != null){
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
                     Text(
                         modifier = Modifier.padding(start = 10.dp),
@@ -177,7 +198,7 @@ fun ShareKanbanDialog (
                         fontSize = 20.sp,
                     )
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     val listSharedWithUsers = sharedWithUsers.toList()
 
