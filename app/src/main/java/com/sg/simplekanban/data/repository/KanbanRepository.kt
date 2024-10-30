@@ -1,21 +1,27 @@
 package com.sg.simplekanban.data.repository
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
+import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE
 import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
 import com.sg.simplekanban.data.constants.Constants.Companion.NAME
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
 import com.sg.simplekanban.data.model.Kanban
+import com.sg.simplekanban.data.model.TableHistory
+import com.sg.simplekanban.domain.TableHistoryUseCase
 import javax.inject.Inject
 
 class KanbanRepository @Inject constructor(
     private val auth: FirebaseAuth,
+    private val tableHistoryUseCase: TableHistoryUseCase,
+    private val context: Context
 ){
 
     fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
@@ -47,15 +53,21 @@ class KanbanRepository @Inject constructor(
         val userId = auth.currentUser?.uid
 
         if(userId != null){
+
+            val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN
+
+            val source = DateUtil.getSourceOnlineOrCache(path, context,  "yyyy/MM/dd-HH:mm", tableHistoryUseCase)
+
             Firebase.firestore
                 .collection(Constants.TABLE_USER).document(userId)
                 .collection(Constants.TABLE_KANBAN)
-                .orderBy(CREATION_DATE, Query.Direction.DESCENDING).get()
+                .orderBy(CREATION_DATE, Query.Direction.DESCENDING).get(source)
                 .addOnFailureListener { error ->
                     onError(error)
                 }
                 .addOnSuccessListener { result ->
                     val cards = result.toObjects<Kanban>()
+                    tableHistoryUseCase.save(TableHistory(path, DateUtil.getCurrentDateFormated("yyyy/MM/dd-HH:mm")))
                     onSuccess(cards)
                 }
         } else {
