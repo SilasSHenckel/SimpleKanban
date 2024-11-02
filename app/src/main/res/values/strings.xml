@@ -42,5 +42,7 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="kanban_members">Membros do Quadro</string>
     <string name="user_added">Usuario Adicionado!</string>
     <string name="user_not_found">Usuário não encontrado!</string>
+    <string name="my_kanbans">Meus Kanbans</string>
+    <string name="shared_with_me">Compartilhados Comigo</string>
 
 </resources>

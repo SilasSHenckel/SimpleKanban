@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -89,7 +90,17 @@ fun MyBody(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
         MyButtonAddKanban()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = stringResource(id = R.string.my_kanbans),
+            color = colorResource(id = R.color.title),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 18.sp
+        )
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -98,10 +109,33 @@ fun MyBody(
             contentPadding = PaddingValues(top = 16.dp),
         ) {
             items(kanbans.size){
-                MyListItem(kanbans[it], nav, kanbanViewModel)
+                MyListItem(kanbans[it], nav, kanbanViewModel, true)
             }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        val sharedWithMeKanbans = kanbanViewModel?.sharedWithMeKanbans
+
+        if(!sharedWithMeKanbans.isNullOrEmpty()){
+            Text(
+                text = stringResource(id = R.string.shared_with_me),
+                color = colorResource(id = R.color.title),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp
+            )
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(top = 16.dp),
+            ) {
+                items(sharedWithMeKanbans.size){
+                    MyListItem(sharedWithMeKanbans[it], nav, kanbanViewModel, false)
+                }
+            }
+        }
     }
 
 }
@@ -146,7 +180,8 @@ fun MyButtonAddKanban(
 fun MyListItem(
     kanban: Kanban,
     nav: NavHostController,
-    kanbanViewModel: KanbanViewModel?
+    kanbanViewModel: KanbanViewModel?,
+    isMyKanban : Boolean
 ){
 
     val isCurrentKanban = kanban.documentId == KanbanInMemory.currentKanban?.documentId
@@ -164,7 +199,8 @@ fun MyListItem(
             )
             .padding(16.dp)
             .clickable {
-                kanbanViewModel?.selectKanban(kanban, nav)
+                val kanbanUserId = if(isMyKanban) kanbanViewModel?.userId else kanbanViewModel?.getUserIdBySharedWithMeKanban(kanban.documentId)
+                kanbanViewModel?.selectKanban(kanbanUserId, kanban, nav)
             }
     ) {
         Text(

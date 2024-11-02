@@ -17,8 +17,8 @@ class ColumnUseCase @Inject constructor(
         columnRepository.save(userId, kanbanId, column, onError, onSuccess)
     }
 
-    fun getColumnsByKanban(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: (List<Column>) -> Unit) {
-        columnRepository.getColumnsByKanban(userId, kanbanId, onError, onSuccess)
+    fun getColumnsByKanban(userId: String, kanbanId: String, isKanbanShared: Boolean, onError: (Throwable) -> Unit, onSuccess: (List<Column>) -> Unit) {
+        columnRepository.getColumnsByKanban(userId, kanbanId, isKanbanShared, onError, onSuccess)
     }
 
     fun delete(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){

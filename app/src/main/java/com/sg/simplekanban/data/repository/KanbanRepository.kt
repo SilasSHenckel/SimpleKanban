@@ -13,9 +13,12 @@ import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE
 import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
 import com.sg.simplekanban.data.constants.Constants.Companion.NAME
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
+import com.sg.simplekanban.data.constants.Constants.Companion.TABLE_USER
+import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.domain.TableHistoryUseCase
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class KanbanRepository @Inject constructor(
@@ -47,6 +50,28 @@ class KanbanRepository @Inject constructor(
                 val card = result.toObject<Kanban>()
                 onSuccess(card)
             }
+    }
+
+    suspend fun getKanbanSharedWithMeById(sharedWithMe: HashMap<String, String>) : List<Kanban>{
+
+        val kanbansSharedWithMe = mutableListOf<Kanban>()
+
+        try {
+            for ((kanbanId, userId) in sharedWithMe){
+                if(kanbanId.isNotEmpty() && userId.isNotEmpty()){
+                    val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN + "/" + kanbanId
+                    val source = DateUtil.getSourceOnlineOrCache(path, context,  "yyyy/MM/dd", tableHistoryUseCase)
+                    val result = Firebase.firestore.collection(Constants.TABLE_USER).document(userId).collection(Constants.TABLE_KANBAN).document(kanbanId).get(source).await()
+                    val kanban = result?.toObject<Kanban>()
+                    tableHistoryUseCase.save(TableHistory(path, DateUtil.getCurrentDateFormated("yyyy/MM/dd-HH:mm")))
+                    if (kanban != null) kanbansSharedWithMe.add(kanban)
+                }
+            }
+        } catch (e: Exception){
+
+        }
+
+        return kanbansSharedWithMe
     }
 
     fun getCurrentUserKanbans(onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {

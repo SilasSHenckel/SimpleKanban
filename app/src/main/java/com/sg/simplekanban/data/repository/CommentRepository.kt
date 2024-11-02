@@ -1,13 +1,20 @@
 package com.sg.simplekanban.data.repository
 
+import android.content.Context
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
+import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.model.Comment
+import com.sg.simplekanban.data.model.TableHistory
+import com.sg.simplekanban.domain.TableHistoryUseCase
 import javax.inject.Inject
 
-class CommentRepository @Inject constructor(){
+class CommentRepository @Inject constructor(
+    private val tableHistoryUseCase: TableHistoryUseCase,
+    private val context: Context
+){
 
     fun save(userId: String, kanbanId: String, cardId: String, comment: Comment, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
@@ -24,16 +31,22 @@ class CommentRepository @Inject constructor(){
     }
 
     fun getCommentsByCard(userId: String, kanbanId: String, cardId: String, onError: (Throwable) -> Unit, onSuccess: (List<Comment>) -> Unit){
+
+        val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN + "/" + kanbanId + "/" + Constants.TABLE_CARD + "/" + cardId + "/" + Constants.TABLE_COMMENT
+
+        val source = DateUtil.getSourceOnlineOrCache(path, context,"yyyy/MM/dd-HH:mm", tableHistoryUseCase)
+
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
             .collection(Constants.TABLE_CARD).document(cardId)
-            .collection(Constants.TABLE_COMMENT).get()
+            .collection(Constants.TABLE_COMMENT).get(source)
             .addOnFailureListener { error ->
                 onError(error)
             }
             .addOnSuccessListener { result ->
                 val cards = result.toObjects<Comment>()
+                tableHistoryUseCase.save(TableHistory(path, DateUtil.getCurrentDateFormated("yyyy/MM/dd-HH:mm")))
                 onSuccess(cards)
             }
     }

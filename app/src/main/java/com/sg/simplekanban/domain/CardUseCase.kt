@@ -12,8 +12,8 @@ class CardUseCase @Inject constructor(
         cardRepository.save(userId, kanbanId, card, onError, onSuccess)
     }
 
-    fun getCardsByColumnId(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
-        cardRepository.getCardsByColumnId(userId, kanbanId, columnId, onError, onSuccess)
+    fun getCardsByColumnId(userId: String, kanbanId: String, isKanbanShared: Boolean, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
+        cardRepository.getCardsByColumnId(userId, kanbanId, isKanbanShared, columnId, onError, onSuccess)
     }
 
     fun delete(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){

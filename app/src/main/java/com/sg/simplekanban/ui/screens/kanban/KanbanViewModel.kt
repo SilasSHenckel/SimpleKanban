@@ -16,9 +16,11 @@ import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
+import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.ColumnUseCase
 import com.sg.simplekanban.domain.KanbanUseCase
+import com.sg.simplekanban.domain.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +31,7 @@ class KanbanViewModel @Inject constructor(
     private val appPreferences: AppPreferences,
     private val columnUseCase: ColumnUseCase,
     private val cardUseCase: CardUseCase,
+    private val userUseCase: UserUseCase
 ): ViewModel() {
 
     var isLoading by mutableStateOf(false)
@@ -37,10 +40,45 @@ class KanbanViewModel @Inject constructor(
 
     var showNewKanbanDialog by mutableStateOf(false)
 
+    var currentUser : User? = null
+
+    var sharedWithMeKanbans by mutableStateOf<List<Kanban>>(listOf())
+
     var userId : String? = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
         loadKanbans()
+        getCurrentUser()
+    }
+
+    private fun getCurrentUser() = viewModelScope.launch {
+        isLoading = true
+        if(userId != null){
+            userUseCase.getUser(
+                userId!!,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    isLoading = false
+                    currentUser = it
+                    loadSharedWithMeKanbans(currentUser)
+                }
+            )
+        }
+    }
+
+    private fun loadSharedWithMeKanbans(currentUser: User?) = viewModelScope.launch {
+        if(currentUser != null && !currentUser.sharedWithMe.isNullOrEmpty()){
+            sharedWithMeKanbans = kanbanUseCase.getKanbanSharedWithMeById(currentUser.sharedWithMe!!)
+        }
+    }
+
+    fun getUserIdBySharedWithMeKanban(kanbanId: String?) : String?{
+        if(kanbanId != null && currentUser != null && !currentUser?.sharedWithMe.isNullOrEmpty()){
+            return currentUser!!.sharedWithMe?.get(kanbanId)
+        }
+        return null
     }
 
     fun loadKanbans() = viewModelScope.launch{
@@ -56,25 +94,26 @@ class KanbanViewModel @Inject constructor(
         )
     }
 
-    fun selectKanban(kanban: Kanban, nav: NavHostController){
-        if(userId != null && KanbanInMemory.currentKanban?.documentId != kanban.documentId){
+    fun selectKanban(kanbanUserId: String?, kanban: Kanban, nav: NavHostController){
+        if(kanbanUserId != null && KanbanInMemory.currentKanban?.documentId != kanban.documentId){
 
             appPreferences.setLastKanbanId(kanban.documentId)
-            appPreferences.setLastKanbanUserId(userId)
+            appPreferences.setLastKanbanUserId(kanbanUserId)
 
             KanbanInMemory.currentKanban = kanban
-            UserInMemory.currentKanbanUserId = userId
+            UserInMemory.currentKanbanUserId = kanbanUserId
 
-            getColumns(kanban, nav)
+            getColumns(kanbanUserId, kanban, nav)
         }
     }
 
-    fun getColumns(kanban: Kanban, nav: NavHostController) = viewModelScope.launch {
-        if(kanban.documentId != null && userId != null){
+    fun getColumns(kanbanUserId: String?, kanban: Kanban, nav: NavHostController) = viewModelScope.launch {
+        if(kanban.documentId != null && kanbanUserId != null){
             isLoading = true
             columnUseCase.getColumnsByKanban(
-                userId!!,
+                kanbanUserId,
                 kanban.documentId!!,
+                kanban.isShared,
                 onError = {
                     isLoading = false
                 },
@@ -86,7 +125,7 @@ class KanbanViewModel @Inject constructor(
                     if (list.isNotEmpty()){
                         list[0].documentId?.let {
                             ColumnsInMemory.selectedColumnId = it
-                            getCardsByColumnId(kanban, it, nav)
+                            getCardsByColumnId(kanbanUserId, kanban, it, nav)
                         }
                     } else {
                         nav.popBackStack()
@@ -96,12 +135,13 @@ class KanbanViewModel @Inject constructor(
         }
     }
 
-    fun getCardsByColumnId(kanban: Kanban, columnId: String, nav: NavHostController) = viewModelScope.launch{
-        if(kanban.documentId != null && userId != null){
+    fun getCardsByColumnId(kanbanUserId: String?, kanban: Kanban, columnId: String, nav: NavHostController) = viewModelScope.launch{
+        if(kanban.documentId != null && kanbanUserId != null){
             isLoading = true
             cardUseCase.getCardsByColumnId(
-                userId!!,
+                kanbanUserId,
                 kanban.documentId!!,
+                kanban.isShared,
                 columnId,
                 onError = {
                     isLoading = false

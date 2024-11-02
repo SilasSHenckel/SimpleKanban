@@ -1,16 +1,23 @@
 package com.sg.simplekanban.data.repository
 
+import android.content.Context
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
+import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.EMAIL
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_ME
+import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.data.model.User
+import com.sg.simplekanban.domain.TableHistoryUseCase
 import javax.inject.Inject
 
-class UserRepository @Inject constructor(){
+class UserRepository @Inject constructor(
+    private val tableHistoryUseCase: TableHistoryUseCase,
+    private val context: Context
+){
 
     fun save(user: User, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
@@ -24,13 +31,18 @@ class UserRepository @Inject constructor(){
     }
 
     fun getUser(userId: String, onError: (Throwable) -> Unit, onSuccess: (User?) -> Unit){
+
+        val path = Constants.TABLE_USER + "/" + userId
+        val source = DateUtil.getSourceOnlineOrCache(path, context,"yyyy/MM/dd-HH:mm", tableHistoryUseCase)
+
         Firebase.firestore
-            .collection(Constants.TABLE_USER).document(userId).get()
+            .collection(Constants.TABLE_USER).document(userId).get(source)
             .addOnFailureListener { error ->
                 onError(error)
             }
             .addOnSuccessListener { result ->
                 val user = result.toObject<User>()
+                tableHistoryUseCase.save(TableHistory(path, DateUtil.getCurrentDateFormated("yyyy/MM/dd-HH:mm")))
                 onSuccess(user)
             }
     }

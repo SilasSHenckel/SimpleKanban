@@ -123,12 +123,14 @@ class HomeViewModel @Inject constructor(
     fun getColumns() = viewModelScope.launch {
 
         val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+        val currentKanban = KanbanInMemory.currentKanban
 
-        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
+        if(currentKanban?.documentId != null && lastKanbanUserId != null){
             isLoading = true
             columnUseCase.getColumnsByKanban(
                 lastKanbanUserId,
-                KanbanInMemory.currentKanban!!.documentId!!,
+                currentKanban.documentId!!,
+                currentKanban.isShared,
                 onError = {
                     isLoading = false
                 },
@@ -152,11 +154,14 @@ class HomeViewModel @Inject constructor(
 
         val lastKanbanUserId = appPreferences.getLastKanbanUserId()
 
-        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
+        val currentKanban = KanbanInMemory.currentKanban
+
+        if(currentKanban?.documentId != null && lastKanbanUserId != null){
             isLoading = true
             cardUseCase.getCardsByColumnId(
                 lastKanbanUserId,
-                KanbanInMemory.currentKanban!!.documentId!!,
+                currentKanban.documentId!!,
+                currentKanban.isShared,
                 columnId,
                 onError = {
                     isLoading = false

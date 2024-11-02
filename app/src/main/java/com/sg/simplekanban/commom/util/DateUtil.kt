@@ -26,7 +26,20 @@ class DateUtil {
             if(path != null){
                 val tableHistoryList = tableHistoryUseCase.getByPath(path)
                 if(tableHistoryList.isNotEmpty()){
-                    val lasGetOnlineDate = tableHistoryList[0].lastGetOnlineDate
+
+                    var lasGetOnlineDate = tableHistoryList[0].lastGetOnlineDate
+
+                    try {
+                        if(format == "yyyy/MM/dd-HH") {
+                            lasGetOnlineDate = lasGetOnlineDate.removeRange(13, 16)
+                        }
+                        if(format == "yyyy/MM/dd") {
+                            lasGetOnlineDate = lasGetOnlineDate.removeRange(9, 16)
+                        }
+                    } catch (e: Exception){
+
+                    }
+
                     if ( getCurrentDateFormated(format ?: "yyyy/MM/dd-HH:mm") == lasGetOnlineDate){
                         source = Source.CACHE
                     }

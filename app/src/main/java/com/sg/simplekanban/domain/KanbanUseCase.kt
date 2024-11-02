@@ -1,12 +1,5 @@
 package com.sg.simplekanban.domain
 
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
-import com.google.firebase.ktx.Firebase
-import com.sg.simplekanban.data.constants.Constants
-import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
-import com.sg.simplekanban.data.constants.Constants.Companion.NAME
-import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.repository.KanbanRepository
 import javax.inject.Inject
@@ -21,6 +14,10 @@ class KanbanUseCase @Inject constructor(
 
     fun getKanbanById(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: (Kanban?) -> Unit){
         kanbanRepository.getKanbanById(userId, kanbanId, onError, onSuccess)
+    }
+
+    suspend fun getKanbanSharedWithMeById(sharedWithMe: HashMap<String, String>) : List<Kanban>{
+        return kanbanRepository.getKanbanSharedWithMeById(sharedWithMe)
     }
 
     fun getCurrentUserKanbans(onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
