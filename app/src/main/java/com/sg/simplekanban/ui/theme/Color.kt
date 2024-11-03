@@ -17,7 +17,7 @@ val TitleGrey = Color(0xFF555555)
 val TextGrey = Color(0xFF808080)
 val PlaceholderGrey = Color(0xFF888888)
 val CancelGrey = Color(0xFFA8A8A8)
-val Red = Color(0xFFE90909)
+val Red = Color(0xFFFF5757)
 
 val White = Color(0xFFFFFFFF)
 val QuaseWhite = Color(0xFFE2E2E2)

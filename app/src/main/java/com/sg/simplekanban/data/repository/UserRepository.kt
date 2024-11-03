@@ -1,6 +1,8 @@
 package com.sg.simplekanban.data.repository
 
 import android.content.Context
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -12,11 +14,12 @@ import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_ME
 import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.TableHistoryUseCase
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UserRepository @Inject constructor(
     private val tableHistoryUseCase: TableHistoryUseCase,
-    private val context: Context
+    private val context: Context,
 ){
 
     fun save(user: User, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
@@ -91,5 +94,7 @@ class UserRepository @Inject constructor(
                 onSuccess()
             }
     }
+
+
 
 }

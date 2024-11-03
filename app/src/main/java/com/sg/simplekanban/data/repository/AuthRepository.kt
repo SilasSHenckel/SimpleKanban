@@ -3,15 +3,12 @@ package com.sg.simplekanban.data.repository
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInResult
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue.serverTimestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObjects
-import com.google.firebase.firestore.util.Util
-import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.CREATED_AT
@@ -38,6 +35,7 @@ class AuthRepository @Inject constructor(
     private var signInRequest: BeginSignInRequest,
     @Named(SIGN_UP_REQUEST)
     private var signUpRequest: BeginSignInRequest,
+    private var signInClient: GoogleSignInClient,
     private val db: FirebaseFirestore
 ) {
 
@@ -83,11 +81,35 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun signOut(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
+        return try {
+            oneTapClient.signOut().await()
+            auth.signOut()
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e)
+        }
+    }
+
     fun FirebaseUser.toUser() = mapOf(
         NAME to displayName,
         EMAIL to email,
         PHOTO_URL to photoUrl?.toString(),
         CREATED_AT to serverTimestamp()
     )
+
+    suspend fun deleteAccount(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
+        return try {
+            auth.currentUser?.apply {
+                db.collection(Constants.TABLE_USER).document(uid).delete().await()
+                signInClient.revokeAccess().await()
+                oneTapClient.signOut().await()
+                delete().await()
+            }
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e)
+        }
+    }
 
 }

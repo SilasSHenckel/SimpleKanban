@@ -61,21 +61,23 @@ fun HomeOptionsDialog (
                 modifier = Modifier.padding(30.dp)
             ) {
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .clickable {
-                            homeViewModel?.showEditNameDialog = true
-                            setShowDialog(false)
-                        },
-                    text = stringResource(id = R.string.change_kanban_name),
-                    color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                )
+                if(UserInMemory.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                            .clickable {
+                                homeViewModel?.showEditNameDialog = true
+                                setShowDialog(false)
+                            },
+                        text = stringResource(id = R.string.change_kanban_name),
+                        color = colorResource(id = R.color.title),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                    )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
 
                 Text(
                     modifier = Modifier
@@ -133,7 +135,8 @@ fun HomeOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-
+                            nav.navigate(AppScreen.Profile.name)
+                            setShowDialog(false)
                         },
                     text = stringResource(id = R.string.my_profile),
                     color = colorResource(id = R.color.title),

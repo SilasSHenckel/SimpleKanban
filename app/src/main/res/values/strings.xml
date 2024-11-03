@@ -45,4 +45,7 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="my_kanbans">Meus Kanbans</string>
     <string name="shared_with_me">Compartilhados Comigo</string>
 
+    <string name="delete_account">Apagar Conta</string>
+    <string name="delete_account_confirm">Você tem certeza que deseja apagar sua conta?</string>
+
 </resources>

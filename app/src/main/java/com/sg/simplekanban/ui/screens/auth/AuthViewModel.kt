@@ -39,4 +39,5 @@ class AuthViewModel @Inject constructor(
         oneTapSignInResponse = Response.Loading
         signInWithGoogleResponse = authRepository.firebaseSignInWithGoogle(googleCredential)
     }
+
 }
