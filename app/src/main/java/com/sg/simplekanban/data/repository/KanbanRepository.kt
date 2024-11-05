@@ -140,7 +140,7 @@ class KanbanRepository @Inject constructor(
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).update(
-                IS_SHARED, kanban.isShared,
+                IS_SHARED, kanban.shared,
                 SHARED_WITH_USERS, kanban.sharedWithUsers
                 )
             .addOnFailureListener { error ->

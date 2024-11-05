@@ -21,7 +21,7 @@ class Constants {
 
         //Kanban
         const val CREATION_DATE = "creationDate"
-        const val IS_SHARED = "isShared"
+        const val IS_SHARED = "shared"
         const val SHARED_WITH_USERS = "sharedWithUsers"
 
         //Card

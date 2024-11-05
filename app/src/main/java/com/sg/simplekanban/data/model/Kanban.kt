@@ -7,7 +7,7 @@ data class Kanban (
     var documentId : String? = null,
 
     var name: String? = null,
-    var isShared: Boolean = false,
+    var shared: Boolean = false,
     var creationDate: String? = null,
 
     //key -> userId, value -> userEmail

@@ -48,4 +48,8 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="delete_account">Delete Account</string>
     <string name="delete_account_confirm">Are you sure you want to delete your account?</string>
 
+    <string name="responsible">Responsible:</string>
+    <string name="creator">Author:</string>
+    <string name="not_assigned">Not Assigned</string>
+
 </resources>

@@ -103,7 +103,23 @@ class KanbanViewModel @Inject constructor(
             KanbanInMemory.currentKanban = kanban
             UserInMemory.currentKanbanUserId = kanbanUserId
 
+            verifyUsers(kanban)
+
             getColumns(kanbanUserId, kanban, nav)
+        }
+    }
+
+    private fun verifyUsers(currentKanban: Kanban) = viewModelScope.launch {
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        if(currentKanban.shared && currentKanbanUserId != null && !currentKanban.sharedWithUsers.isNullOrEmpty() && currentKanban.documentId != null){
+            userUseCase.getKanbanMembers(currentKanbanUserId, currentKanban.documentId!!, currentKanban.sharedWithUsers!!,
+                onError = {
+
+                },
+                onSuccess = {
+                    KanbanInMemory.kanbanMembers = it
+                }
+            )
         }
     }
 
@@ -113,7 +129,7 @@ class KanbanViewModel @Inject constructor(
             columnUseCase.getColumnsByKanban(
                 kanbanUserId,
                 kanban.documentId!!,
-                kanban.isShared,
+                kanban.shared,
                 onError = {
                     isLoading = false
                 },
@@ -141,7 +157,7 @@ class KanbanViewModel @Inject constructor(
             cardUseCase.getCardsByColumnId(
                 kanbanUserId,
                 kanban.documentId!!,
-                kanban.isShared,
+                kanban.shared,
                 columnId,
                 onError = {
                     isLoading = false
@@ -164,7 +180,7 @@ class KanbanViewModel @Inject constructor(
 
         val kanban = Kanban(
             name = name,
-            isShared = false,
+            shared = false,
             creationDate = DateUtil.getCurrentDateFormated()
         )
 

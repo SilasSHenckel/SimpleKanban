@@ -3,6 +3,7 @@ package com.sg.simplekanban.data.repository
 import android.content.Context
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -95,6 +96,54 @@ class UserRepository @Inject constructor(
             }
     }
 
+    suspend fun getKanbanMembers(kanbanUserId: String, kanbanId: String, sharedWithUsers: HashMap<String, String>, onError: (Throwable) -> Unit, onSuccess: (List<User>) -> Unit){
 
+        try {
+
+            val list = mutableListOf<User>()
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+            val containsCurrentUser = currentUserId != null && sharedWithUsers.contains(currentUserId)
+
+            //se nao contem o usuario quer dizer que ele e o dono do kanban, buscar ele tambem para ter na lista
+            if(!containsCurrentUser && currentUserId != null){
+                val user = getKanbanMember(kanbanUserId, kanbanId, currentUserId)
+                if(user != null) list.add(user)
+            }
+
+            if(containsCurrentUser){
+                val user = getKanbanMember(kanbanUserId, kanbanId, kanbanUserId)
+                if(user != null) list.add(user)
+            }
+
+            for ((id, email) in sharedWithUsers){
+                val user = getKanbanMember(kanbanUserId, kanbanId, id)
+                if(user != null) list.add(user)
+            }
+
+            onSuccess(list)
+
+        } catch (e: Exception){
+            onError(e)
+        }
+
+    }
+
+    private suspend fun getKanbanMember(kanbanUserId: String, kanbanId: String, userId: String) : User?{
+        val path = Constants.TABLE_USER + "/" + kanbanUserId + "/" + Constants.TABLE_KANBAN + "/Member/"  + userId
+
+        val source = DateUtil.getSourceOnlineOrCache(path, context,"yyyy/MM/dd", tableHistoryUseCase)
+
+        val result = Firebase.firestore.collection(Constants.TABLE_USER).document(userId).get(source).await()
+        if(result != null){
+            val user = result.toObject<User>()
+            if(user != null){
+                tableHistoryUseCase.save(TableHistory(path, DateUtil.getCurrentDateFormated("yyyy/MM/dd-HH:mm")))
+                return user
+            }
+        }
+
+        return null
+    }
 
 }

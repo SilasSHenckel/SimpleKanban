@@ -74,7 +74,7 @@ class AuthRepository @Inject constructor(
         auth.currentUser?.apply {
             val user = toUser()
             db.collection(TABLE_USER).document(uid).set(user).await()
-            val response = db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).add(Kanban(name = "Kanban 1", isShared = false, creationDate = DateUtil.getCurrentDateFormated())).await()
+            val response = db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).add(Kanban(name = "Kanban 1", shared = false, creationDate = DateUtil.getCurrentDateFormated())).await()
             db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "TO DO", priority = 0)).await()
             db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DOING", priority = 1)).await()
             db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DONE", priority = 2)).await()

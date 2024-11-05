@@ -48,4 +48,8 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="delete_account">Apagar Conta</string>
     <string name="delete_account_confirm">Você tem certeza que deseja apagar sua conta?</string>
 
+    <string name="responsible">Responsavel</string>
+    <string name="creator">Relator:</string>
+    <string name="not_assigned">Nao Atribuido</string>
+
 </resources>

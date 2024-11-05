@@ -73,6 +73,7 @@ class HomeViewModel @Inject constructor(
                         appPreferences.setLastKanbanId(list[0].documentId)
                         appPreferences.setLastKanbanUserId(userId)
 
+                        if (KanbanInMemory.currentKanban != null) verifyUsers(KanbanInMemory.currentKanban!!)
                         getColumns()
                     }
                 }
@@ -88,7 +89,22 @@ class HomeViewModel @Inject constructor(
                     UserInMemory.currentKanbanUserId = lastKanbanUserId
 
                     isLoading = false
+                    if (kanban != null) verifyUsers(kanban)
                     getColumns()
+                }
+            )
+        }
+    }
+
+    private fun verifyUsers(currentKanban: Kanban) = viewModelScope.launch {
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        if(currentKanban.shared && currentKanbanUserId != null && !currentKanban.sharedWithUsers.isNullOrEmpty() && currentKanban.documentId != null){
+            userUseCase.getKanbanMembers(currentKanbanUserId, currentKanban.documentId!!, currentKanban.sharedWithUsers!!,
+                onError = {
+
+                },
+                onSuccess = {
+                    KanbanInMemory.kanbanMembers = it
                 }
             )
         }
@@ -130,7 +146,7 @@ class HomeViewModel @Inject constructor(
             columnUseCase.getColumnsByKanban(
                 lastKanbanUserId,
                 currentKanban.documentId!!,
-                currentKanban.isShared,
+                currentKanban.shared,
                 onError = {
                     isLoading = false
                 },
@@ -161,7 +177,7 @@ class HomeViewModel @Inject constructor(
             cardUseCase.getCardsByColumnId(
                 lastKanbanUserId,
                 currentKanban.documentId!!,
-                currentKanban.isShared,
+                currentKanban.shared,
                 columnId,
                 onError = {
                     isLoading = false
@@ -202,7 +218,7 @@ class HomeViewModel @Inject constructor(
                 sharedList[user.documentId] = user.email!!
             }
             kanban.sharedWithUsers = sharedList
-            kanban.isShared = true
+            kanban.shared = true
 
             isLoading = true
             kanbanUseCase.updateKanbanShared(

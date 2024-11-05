@@ -2,6 +2,7 @@ package com.sg.simplekanban.ui.screens.card
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -29,9 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +57,7 @@ import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.data.inMemory.CardInMemory
+import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.components.MyProgressBar
 
@@ -178,6 +185,80 @@ fun CardScreen (
                     description = newText
                 }
             )
+
+            Spacer(modifier = Modifier.height(34.dp))
+
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+
+                val configuration = LocalConfiguration.current
+                val width = configuration.screenWidthDp.dp / 5
+
+                Text(
+                    modifier = Modifier
+                        .width(width * 2)
+                        .padding(start = 20.dp),
+                    text = stringResource(id = R.string.responsible),
+                    color = colorResource(id = R.color.black),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
+
+                if(card?.responsibleId == null){
+                    Image(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "user",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    modifier = Modifier.width((width * 3) - 52.dp),
+                    text = if(card?.responsibleId == null) stringResource(id = R.string.not_assigned) else card.responsibleId ,
+                    color = colorResource(id = R.color.text),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if(!isCreatingCard){
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+
+                    val configuration = LocalConfiguration.current
+                    val width = configuration.screenWidthDp.dp / 5
+
+                    Text(
+                        modifier = Modifier
+                            .width(width * 2)
+                            .padding(start = 20.dp),
+                        text = stringResource(id = R.string.creator),
+                        color = colorResource(id = R.color.black),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        modifier = Modifier.width(width * 3),
+                        text = card?.ownerId ?: "",
+                        color = colorResource(id = R.color.text),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+
+            val currentKanban = KanbanInMemory.currentKanban
+
 
         }
 

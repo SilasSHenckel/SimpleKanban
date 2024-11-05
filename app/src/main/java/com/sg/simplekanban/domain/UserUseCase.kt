@@ -1,5 +1,6 @@
 package com.sg.simplekanban.domain
 
+import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.data.repository.UserRepository
 import kotlinx.coroutines.tasks.await
@@ -31,6 +32,10 @@ class UserUseCase @Inject constructor(
 
     fun updateUserSharedKanbans(user: User, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         userRepository.updateUserSharedKanbans(user, onError, onSuccess)
+    }
+
+    suspend fun getKanbanMembers(kanbanUserId: String, kanbanId: String, sharedWithUsers: HashMap<String, String>, onError: (Throwable) -> Unit, onSuccess: (List<User>) -> Unit){
+        userRepository.getKanbanMembers(kanbanUserId, kanbanId, sharedWithUsers, onError, onSuccess)
     }
 
 }

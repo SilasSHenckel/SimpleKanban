@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -14,13 +15,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,9 +40,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +53,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
@@ -54,6 +62,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.ui.components.EditKanbanNameDialog
 import com.sg.simplekanban.ui.components.HomeOptionsDialog
 import com.sg.simplekanban.ui.components.MoveCardDialog
@@ -112,10 +121,10 @@ fun HomeScreen(
         LazyRow (
             state = listState,
             modifier = Modifier
-            .fillMaxWidth()
+                .fillMaxWidth()
                 .height(60.dp)
-            .background(color = colorResource(id = R.color.menu_background))
-            .align(Alignment.BottomCenter)) {
+                .background(color = colorResource(id = R.color.menu_background))
+                .align(Alignment.BottomCenter)) {
             itemsIndexed(columns) { index: Int, column: Column ->
                 MyTab(
                     name = column.name ?: "",
@@ -174,39 +183,82 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MyToolBar(
     title: String,
     homeViewModel: HomeViewModel
 ){
-    Box(
+
+    val kanbanMembers = KanbanInMemory.kanbanMembers
+
+    val hasKanbanMembers = kanbanMembers.isNotEmpty()
+
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
             .background(color = colorResource(id = R.color.menu_background))
-            .padding(start = 20.dp),
+            .padding(start = 20.dp)
     ){
-        Text(
-            modifier = Modifier.align(Alignment.CenterStart),
-            text = title,
-            color = colorResource(id = R.color.title),
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 20.sp
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+        ){
+            Text(
+                modifier = Modifier.align(Alignment.CenterStart),
+                text = title,
+                color = colorResource(id = R.color.title),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp
             )
 
-        IconButton(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = {
-                homeViewModel.showOptionsDialog = true
+            IconButton(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onClick = {
+                    homeViewModel.showOptionsDialog = true
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = null,
+                    tint = colorResource(id = R.color.title)
+                )
             }
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = null,
-                tint = colorResource(id = R.color.title)
-            )
+        }
+
+        if(hasKanbanMembers){
+            LazyRow (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
+                contentPadding = PaddingValues(all = 0.dp),
+                modifier = Modifier.height(30.dp)
+            ) {
+                itemsIndexed(kanbanMembers){ index: Int, user: User ->
+                    if(!user.photoUrl.isNullOrEmpty()){
+                        GlideImage(
+                            model = user.photoUrl,
+                            contentDescription = "user",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(15.dp)),
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.avatar),
+                            contentDescription = "user",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                        )
+                    }
+
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
+
 }
 
 @Composable
