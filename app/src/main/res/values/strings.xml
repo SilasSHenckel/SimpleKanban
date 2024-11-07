@@ -36,11 +36,11 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="create_kanban">Criar Kanban</string>
     <string name="name">Nome</string>
     <string name="email">Email</string>
-    <string name="search_user">Buscar Usuario</string>
-    <string name="invalid_email">Email Invalido</string>
+    <string name="search_user">Buscar Usuário</string>
+    <string name="invalid_email">Email Inválido</string>
     <string name="user_founded">Usuario Encontrado</string>
     <string name="kanban_members">Membros do Quadro</string>
-    <string name="user_added">Usuario Adicionado!</string>
+    <string name="user_added">Usuário Adicionado!</string>
     <string name="user_not_found">Usuário não encontrado!</string>
     <string name="my_kanbans">Meus Kanbans</string>
     <string name="shared_with_me">Compartilhados Comigo</string>
@@ -48,8 +48,10 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="delete_account">Apagar Conta</string>
     <string name="delete_account_confirm">Você tem certeza que deseja apagar sua conta?</string>
 
-    <string name="responsible">Responsavel</string>
+    <string name="responsible">Responsável:</string>
     <string name="creator">Relator:</string>
-    <string name="not_assigned">Nao Atribuido</string>
+    <string name="not_assigned">Nao Atribuído</string>
+
+
 
 </resources>

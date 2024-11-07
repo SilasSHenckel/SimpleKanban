@@ -4,6 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,8 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.ui.components.DeleteCardDialog
@@ -60,7 +63,9 @@ import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.components.MyProgressBar
+import com.sg.simplekanban.ui.components.SelectUserDialog
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun CardScreen (
     nav: NavHostController = rememberNavController(),
@@ -201,12 +206,14 @@ fun CardScreen (
                         .width(width * 2)
                         .padding(start = 20.dp),
                     text = stringResource(id = R.string.responsible),
-                    color = colorResource(id = R.color.black),
+                    color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp
                 )
 
-                if(card?.responsibleId == null){
+                val responsible = cardViewModel.responsible
+
+                if(responsible == null){
                     Image(
                         painter = painterResource(id = R.drawable.profile),
                         contentDescription = "user",
@@ -214,15 +221,27 @@ fun CardScreen (
                             .size(36.dp)
                             .clip(RoundedCornerShape(20.dp))
                     )
+                } else {
+                    GlideImage(
+                        model = responsible.photoUrl,
+                        contentDescription = "user",
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(15.dp)),
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Text(
-                    modifier = Modifier.width((width * 3) - 52.dp),
-                    text = if(card?.responsibleId == null) stringResource(id = R.string.not_assigned) else card.responsibleId ,
+                    modifier = Modifier
+                        .width((width * 3) - 52.dp)
+                        .clickable {
+                            cardViewModel.showSelectResponsibleDialog = true
+                        },
+                    text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
                     color = colorResource(id = R.color.text),
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 20.sp
                 )
             }
@@ -243,7 +262,7 @@ fun CardScreen (
                             .width(width * 2)
                             .padding(start = 20.dp),
                         text = stringResource(id = R.string.creator),
-                        color = colorResource(id = R.color.black),
+                        color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp
                     )
@@ -251,7 +270,7 @@ fun CardScreen (
                         modifier = Modifier.width(width * 3),
                         text = card?.ownerId ?: "",
                         color = colorResource(id = R.color.text),
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Medium,
                         fontSize = 20.sp
                     )
                 }
@@ -275,6 +294,19 @@ fun CardScreen (
                     }
                 )
             }
+        }
+
+
+        if(cardViewModel.showSelectResponsibleDialog){
+            SelectUserDialog(
+                users = KanbanInMemory.kanbanMembers,
+                setShowDialog = {cardViewModel.showSelectResponsibleDialog = false},
+                title = stringResource(id = R.string.responsible),
+                onSelectUser = { user ->
+                    cardViewModel.responsible = user
+                    if(!showButton) showButton = true
+                }
+            )
         }
 
         val isLoading = cardViewModel.isLoading
@@ -311,9 +343,10 @@ fun onUpdateClick(
 ){
     if(card != null){
         if(!title.isNullOrEmpty()){
-            if(verifyIfHasChangesInCard(card, title, description)){
+            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId)){
                 card.title = title
                 card.description = description
+                card.responsibleId = cardViewModel.responsible?.documentId
                 cardViewModel.updateCard(card, nav)
             } else {
                 nav.popBackStack()
@@ -327,9 +360,10 @@ fun onUpdateClick(
 fun verifyIfHasChangesInCard(
     card: Card,
     title: String?,
-    description: String
+    description: String,
+    responsibleId: String?
 ) : Boolean{
-    return card.title != title || card.description != description
+    return card.title != title || card.description != description || card.responsibleId != responsibleId
 }
 
 @Composable

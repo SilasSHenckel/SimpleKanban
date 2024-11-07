@@ -12,6 +12,7 @@ import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.CardUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -25,6 +26,13 @@ class CardViewModel @Inject constructor(
     var isLoading by mutableStateOf(false)
 
     var showDeleteCardDialog by mutableStateOf(false)
+    var showSelectResponsibleDialog by mutableStateOf(false)
+
+    var responsible by mutableStateOf<User?>(null)
+
+    init {
+        responsible = getCardResponsible(CardInMemory.card?.responsibleId)
+    }
 
     fun saveCard(
         title: String,
@@ -151,6 +159,18 @@ class CardViewModel @Inject constructor(
 
             CardInMemory.cards = newList
         }
+    }
+
+    fun getCardResponsible(responsibleId: String?) : User? {
+        if(responsibleId == null) return null
+
+        val members = KanbanInMemory.kanbanMembers
+
+        for(member in members){
+            if(member.documentId == responsibleId) return member
+        }
+
+        return null
     }
 
 }
