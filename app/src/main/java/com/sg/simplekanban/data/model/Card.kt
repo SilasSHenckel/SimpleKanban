@@ -13,6 +13,7 @@ data class Card (
     var description: String? = null,
     var columnId : String? = null,
     val creationDate : String? = null,
+    val startDate : String? = null,
     val endDate : String? = null,
     val priority : Int = 0,
     val ownerId : String? = null,

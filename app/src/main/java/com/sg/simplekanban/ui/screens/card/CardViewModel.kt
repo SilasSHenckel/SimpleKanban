@@ -29,9 +29,11 @@ class CardViewModel @Inject constructor(
     var showSelectResponsibleDialog by mutableStateOf(false)
 
     var responsible by mutableStateOf<User?>(null)
+    var author by mutableStateOf<User?>(null)
 
     init {
-        responsible = getCardResponsible(CardInMemory.card?.responsibleId)
+        responsible = getCardMember(CardInMemory.card?.responsibleId)
+        author = getCardMember(CardInMemory.card?.ownerId)
     }
 
     fun saveCard(
@@ -161,13 +163,13 @@ class CardViewModel @Inject constructor(
         }
     }
 
-    fun getCardResponsible(responsibleId: String?) : User? {
-        if(responsibleId == null) return null
+    fun getCardMember(memberId: String?) : User? {
+        if(memberId == null) return null
 
         val members = KanbanInMemory.kanbanMembers
 
         for(member in members){
-            if(member.documentId == responsibleId) return member
+            if(member.documentId == memberId) return member
         }
 
         return null

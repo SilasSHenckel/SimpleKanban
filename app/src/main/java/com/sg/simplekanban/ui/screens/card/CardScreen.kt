@@ -63,6 +63,7 @@ import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.components.MyProgressBar
+import com.sg.simplekanban.ui.components.MyTextField
 import com.sg.simplekanban.ui.components.SelectUserDialog
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -193,13 +194,15 @@ fun CardScreen (
 
             Spacer(modifier = Modifier.height(34.dp))
 
+            val configuration = LocalConfiguration.current
+            val width = configuration.screenWidthDp.dp / 5
+
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ){
 
-                val configuration = LocalConfiguration.current
-                val width = configuration.screenWidthDp.dp / 5
+
 
                 Text(
                     modifier = Modifier
@@ -207,13 +210,13 @@ fun CardScreen (
                         .padding(start = 20.dp),
                     text = stringResource(id = R.string.responsible),
                     color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 20.sp
                 )
 
                 val responsible = cardViewModel.responsible
 
-                if(responsible == null){
+                if(responsible?.photoUrl == null){
                     Image(
                         painter = painterResource(id = R.drawable.profile),
                         contentDescription = "user",
@@ -240,22 +243,19 @@ fun CardScreen (
                             cardViewModel.showSelectResponsibleDialog = true
                         },
                     text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
-                    color = colorResource(id = R.color.text),
-                    fontWeight = FontWeight.Medium,
+                    color = colorResource(id = R.color.title),
                     fontSize = 20.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             if(!isCreatingCard){
+
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ){
-
-                    val configuration = LocalConfiguration.current
-                    val width = configuration.screenWidthDp.dp / 5
 
                     Text(
                         modifier = Modifier
@@ -263,20 +263,135 @@ fun CardScreen (
                             .padding(start = 20.dp),
                         text = stringResource(id = R.string.creator),
                         color = colorResource(id = R.color.title),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp
-                    )
-                    Text(
-                        modifier = Modifier.width(width * 3),
-                        text = card?.ownerId ?: "",
-                        color = colorResource(id = R.color.text),
                         fontWeight = FontWeight.Medium,
                         fontSize = 20.sp
                     )
-                }
-            }
 
-            val currentKanban = KanbanInMemory.currentKanban
+                    val author = cardViewModel.author
+
+                    if(author?.photoUrl == null ){
+                        Image(
+                            painter = painterResource(id = R.drawable.profile),
+                            contentDescription = "user",
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                        )
+                    } else {
+                        GlideImage(
+                            model = author.photoUrl,
+                            contentDescription = "user",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(15.dp)),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        modifier = Modifier
+                            .width((width * 3) - 52.dp),
+                        text = author?.name ?: (author?.email ?: ""),
+                        color = colorResource(id = R.color.title),
+                        fontSize = 20.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    //start date
+                    Text(
+                        modifier = Modifier
+                            .width(width * 2)
+                            .padding(start = 20.dp),
+                        text = stringResource(id = R.string.start_date),
+                        color = colorResource(id = R.color.title),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp
+                    )
+
+                    val startDate = card?.startDate
+
+                    Text(
+                        modifier = Modifier
+                            .width((width * 3) - 52.dp)
+                            .clickable {
+                                //TODO
+                            },
+                        text = if(startDate != null) startDate else stringResource(id = R.string.select),
+                        color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
+                        fontSize = 20.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    //end date
+                    Text(
+                        modifier = Modifier
+                            .width(width * 2)
+                            .padding(start = 20.dp),
+                        text = stringResource(id = R.string.end_date),
+                        color = colorResource(id = R.color.title),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp
+                    )
+
+                    val endDate = card?.endDate
+
+                    Text(
+                        modifier = Modifier
+                            .width((width * 3) - 52.dp)
+                            .clickable {
+                                //TODO
+                            },
+                        text =  if(endDate != null) endDate else stringResource(id = R.string.select),
+                        color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
+                        fontSize = 20.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(50.dp))
+
+                //COMENTS
+                Text(
+                    modifier = Modifier
+                        .padding(start = 20.dp),
+                    text = stringResource(id = R.string.comments),
+                    color = colorResource(id = R.color.title),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp
+                )
+
+                var coment by remember { mutableStateOf(TextFieldValue("")) }
+                var showCommentButton by remember { mutableStateOf(false) }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+
+                MyTextField(
+                    text = coment,
+                    onValueChange = { newText ->
+                        if(newText.text != coment.text && !showCommentButton) showCommentButton = true
+                        if(newText.text.length < 20) coment = newText
+                    },
+                    placeholderText = stringResource(id = R.string.write_comment),
+                    width = configuration.screenWidthDp.dp - 23.dp,
+                    paddingStart = 23.dp
+                )
+
+
+
+            }
 
 
         }

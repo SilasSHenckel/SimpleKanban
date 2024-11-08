@@ -6,6 +6,7 @@
     <color name="menu_background">#FFF0F0F0</color>
     <color name="title">#FF555555</color>
     <color name="text">#FF808080</color>
+    <color name="hint">#C3C3C3</color>
     <color name="blue_selected">#2D9FE5</color>
     <color name="card_background">#FFECECEC</color>
     <color name="background">#FFFFFF</color>
