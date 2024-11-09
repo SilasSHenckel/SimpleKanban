@@ -166,6 +166,8 @@ class CardViewModel @Inject constructor(
             if(index != null) newList[index] = newCard
             else newList.add(newCard)
 
+            newList.sortByDescending { it.priority }
+
             CardInMemory.cards = newList
         }
     }
