@@ -1,11 +1,13 @@
 package com.sg.simplekanban.ui.screens.card
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.ColumnsInMemory
@@ -20,20 +22,44 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CardViewModel @Inject constructor(
-    private val cardUseCase: CardUseCase
+    private val cardUseCase: CardUseCase,
+    private val context: Context
 ): ViewModel() {
 
     var isLoading by mutableStateOf(false)
 
     var showDeleteCardDialog by mutableStateOf(false)
     var showSelectResponsibleDialog by mutableStateOf(false)
+    var showSelectPriorityDialog by mutableStateOf(false)
 
     var responsible by mutableStateOf<User?>(null)
     var author by mutableStateOf<User?>(null)
 
+    var priority by mutableStateOf<Priority?>(null)
+
+    var priorities = listOf(
+        Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
+        Priority(1, context.getString(R.string.low_priority), "#73FF88", "#0BA923"),
+        Priority(2, context.getString(R.string.medium_priority), "#FFDA73", "#E49800"),
+        Priority(3, context.getString(R.string.high_priority), "#FFA3A3", "#E83411"),
+    )
+
     init {
         responsible = getCardMember(CardInMemory.card?.responsibleId)
         author = getCardMember(CardInMemory.card?.ownerId)
+        loadCardPriority(CardInMemory.card?.priority)
+    }
+
+    private fun loadCardPriority(cardPriority: Int?){
+        if(cardPriority == null ) priority = Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E")
+        else {
+            for (p in priorities){
+                if(p.id == cardPriority){
+                    priority = p
+                    return
+                }
+            }
+        }
     }
 
     fun saveCard(

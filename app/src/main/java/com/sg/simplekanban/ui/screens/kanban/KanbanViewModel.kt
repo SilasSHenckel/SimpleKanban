@@ -114,12 +114,14 @@ class KanbanViewModel @Inject constructor(
         if(currentKanban.shared && currentKanbanUserId != null && !currentKanban.sharedWithUsers.isNullOrEmpty() && currentKanban.documentId != null){
             userUseCase.getKanbanMembers(currentKanbanUserId, currentKanban.documentId!!, currentKanban.sharedWithUsers!!,
                 onError = {
-
+                    KanbanInMemory.kanbanMembers = listOf()
                 },
                 onSuccess = {
                     KanbanInMemory.kanbanMembers = it
                 }
             )
+        } else {
+            KanbanInMemory.kanbanMembers = listOf()
         }
     }
 

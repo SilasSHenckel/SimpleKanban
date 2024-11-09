@@ -57,6 +57,11 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="comments">Comentários</string>
     <string name="write_comment">Escrever comentário</string>
 
+    <string name="high_priority">Prioridade Alta</string>
+    <string name="medium_priority">Prioridade Media</string>
+    <string name="low_priority">Prioridade Baixa</string>
+    <string name="select_priority">Selecionar Prioridade</string>
+
 
 
 </resources>

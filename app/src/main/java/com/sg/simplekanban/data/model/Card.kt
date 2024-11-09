@@ -15,7 +15,7 @@ data class Card (
     val creationDate : String? = null,
     val startDate : String? = null,
     val endDate : String? = null,
-    val priority : Int = 0,
+    var priority : Int = 0,
     val ownerId : String? = null,
     var responsibleId : String? = null,
 )  : Parcelable

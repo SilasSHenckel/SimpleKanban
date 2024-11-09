@@ -30,3 +30,12 @@ val BlueLight = Color(0xFF57D8E6)
 
 val Yellow = Color(0xFFE44800)
 val YellowLight = Color(0xFFFF9F12)
+
+val PrioritySelect1 = Color(0xFF9E9E9E)
+val PrioritySelect2 = Color(0xFF3E3E3E)
+val PriorityHigh1 = Color(0xFFFFA3A3)
+val PriorityHigh2 = Color(0xFFE44800)
+val PriorityMedium1 = Color(0xFFFFDA73)
+val PriorityMedium2 = Color(0xFFFF9F12)
+val PriorityLow1 = Color(0xFF73FF88)
+val PriorityLow2 = Color(0xFF0BA923)

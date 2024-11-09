@@ -1,12 +1,14 @@
 package com.sg.simplekanban.data.repository
 
 import android.content.Context
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.COLUMN_ID
+import com.sg.simplekanban.data.constants.Constants.Companion.PRIORITY
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.domain.TableHistoryUseCase
@@ -39,7 +41,7 @@ class CardRepository @Inject constructor(
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
-            .collection(Constants.TABLE_CARD).whereEqualTo("columnId", columnId).get(source)
+            .collection(Constants.TABLE_CARD).whereEqualTo("columnId", columnId).orderBy(PRIORITY, Query.Direction.DESCENDING).get(source)
             .addOnFailureListener { error ->
                 onError(error)
             }

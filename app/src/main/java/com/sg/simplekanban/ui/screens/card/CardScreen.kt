@@ -5,8 +5,10 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,8 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -34,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +51,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -64,6 +70,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.components.MyTextField
+import com.sg.simplekanban.ui.components.SelectPriorityDialog
 import com.sg.simplekanban.ui.components.SelectUserDialog
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -144,7 +151,7 @@ fun CardScreen (
                         Button(
                             onClick = {
                                 if(isCreatingCard){
-                                    onSaveClick(title.text, description.text, columnId ?: "0", 3, userId, context, cardViewModel, nav)
+                                    onSaveClick(title.text, description.text, columnId ?: "0", cardViewModel.priority?.id ?: 0, userId, context, cardViewModel, nav)
                                 } else {
                                     onUpdateClick(card, title.text, description.text, context, cardViewModel, nav)
                                 }
@@ -197,12 +204,51 @@ fun CardScreen (
             val configuration = LocalConfiguration.current
             val width = configuration.screenWidthDp.dp / 5
 
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)) {
+
+                val selectedPriority = cardViewModel.priority
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color((selectedPriority?.color1 ?: "9E9E9E").toColorInt()),
+                                    Color((selectedPriority?.color2 ?: "3E3E3E").toColorInt())
+                                )
+                            ), shape = RoundedCornerShape(8.dp)
+                        )
+                        .height(30.dp),
+                    contentPadding = PaddingValues(5.dp),
+
+                    onClick = {
+                        cardViewModel.showSelectPriorityDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Image(painter = painterResource(id = R.drawable.priority), contentDescription = "finuto minal", Modifier.size(18.dp))
+                        Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase())
+                    }
+
+                }
+            }
+
+            Spacer(modifier = Modifier.height(34.dp))
+
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ){
-
-
 
                 Text(
                     modifier = Modifier
@@ -424,11 +470,24 @@ fun CardScreen (
             )
         }
 
+        if(cardViewModel.showSelectPriorityDialog){
+            SelectPriorityDialog(
+                priorities = cardViewModel.priorities.filter { it.id != 0 },
+                setShowDialog = {cardViewModel.showSelectPriorityDialog = false},
+                title = stringResource(id = R.string.select_priority),
+                onSelect = { priority ->
+                    cardViewModel.priority = priority
+                    if(!showButton) showButton = true
+                }
+            )
+        }
+
         val isLoading = cardViewModel.isLoading
         if(isLoading) MyProgressBar()
     }
 
 }
+
 
 
 fun onSaveClick(
@@ -458,10 +517,11 @@ fun onUpdateClick(
 ){
     if(card != null){
         if(!title.isNullOrEmpty()){
-            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId)){
+            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId, cardViewModel.priority?.id ?: card.priority)){
                 card.title = title
                 card.description = description
                 card.responsibleId = cardViewModel.responsible?.documentId
+                card.priority = cardViewModel.priority?.id ?: card.priority
                 cardViewModel.updateCard(card, nav)
             } else {
                 nav.popBackStack()
@@ -476,9 +536,10 @@ fun verifyIfHasChangesInCard(
     card: Card,
     title: String?,
     description: String,
-    responsibleId: String?
+    responsibleId: String?,
+    selectedPriority: Int
 ) : Boolean{
-    return card.title != title || card.description != description || card.responsibleId != responsibleId
+    return card.title != title || card.description != description || card.responsibleId != responsibleId || card.priority != selectedPriority
 }
 
 @Composable

@@ -1,6 +1,6 @@
 package com.sg.simplekanban.ui.screens.home
 
-import android.graphics.Color
+
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,11 +35,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -50,8 +50,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -71,6 +71,14 @@ import com.sg.simplekanban.ui.components.ShareKanbanDialog
 import com.sg.simplekanban.ui.routes.AppScreen
 import com.sg.simplekanban.ui.theme.MenuBackgroundDark
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
+import com.sg.simplekanban.ui.theme.PriorityHigh1
+import com.sg.simplekanban.ui.theme.PriorityHigh2
+import com.sg.simplekanban.ui.theme.PriorityLow1
+import com.sg.simplekanban.ui.theme.PriorityLow2
+import com.sg.simplekanban.ui.theme.PriorityMedium1
+import com.sg.simplekanban.ui.theme.PriorityMedium2
+import com.sg.simplekanban.ui.theme.PrioritySelect1
+import com.sg.simplekanban.ui.theme.PrioritySelect2
 import com.sg.simplekanban.ui.theme.SelectedBlue
 import com.sg.simplekanban.ui.theme.White
 import kotlinx.coroutines.launch
@@ -359,14 +367,13 @@ fun MyListItem(
         )
     }
 
-    Row (
+    Box (
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 color = colorResource(id = R.color.card_background),
                 shape = RoundedCornerShape(10.dp)
             )
-            .padding(20.dp)
             .combinedClickable(
                 onClick = {
                     CardInMemory.card = card
@@ -378,14 +385,51 @@ fun MyListItem(
                 },
             )
     ) {
+
         Text(
+            modifier = Modifier.align(Alignment.CenterStart).padding(top = 20.dp, start = 20.dp, bottom = 25.dp, end = 20.dp),
             text = card.title ?: "",
             color = colorResource(id = R.color.title),
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp
         )
+        
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(horizontal = 20.dp, vertical = 15.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            priorityColors[card.priority]?.first ?: PrioritySelect1,
+                            priorityColors[card.priority]?.second ?: PrioritySelect2
+                        )
+                    ),
+                    shape = RoundedCornerShape(5.dp)
+                )
+                .height(4.dp)
+                .width(priorityWidth[card.priority] ?: 15.dp)
+        ) {
+            
+        }
     }
 }
+
+val priorityColors = hashMapOf(
+    Pair(0, Pair(PrioritySelect1, PrioritySelect2)),
+    Pair(1, Pair(PriorityLow1, PriorityLow2)),
+    Pair(2, Pair(PriorityMedium1, PriorityMedium2)),
+    Pair(3, Pair(PriorityHigh1, PriorityHigh2)),
+)
+
+
+val priorityWidth = hashMapOf(
+    Pair(0, 20.dp),
+    Pair(1, 25.dp),
+    Pair(2, 30.dp),
+    Pair(3, 35.dp),
+)
+
 
 @Composable
 fun MyTab(
@@ -437,8 +481,8 @@ fun SetStatusBarColor(){
 
      val statusBarLight = MenuBackgroundGrey
      val statusBarDark = MenuBackgroundDark
-     val navigationBarLight = Color.BLACK
-     val navigationBarDark = Color.BLACK
+     val navigationBarLight = android.graphics.Color.BLACK
+     val navigationBarDark = android.graphics.Color.BLACK
     val isDarkMode = isSystemInDarkTheme()
     val context = LocalContext.current as ComponentActivity
 
