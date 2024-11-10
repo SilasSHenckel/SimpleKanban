@@ -1,19 +1,23 @@
 package com.sg.simplekanban.commom.util
 
 import android.content.Context
-import android.icu.util.Calendar
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import com.google.firebase.firestore.Source
 import com.sg.simplekanban.domain.TableHistoryUseCase
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 class DateUtil {
 
 
     companion object{
+
+        fun getDateFormated(calendar: Calendar, format: String = "yyyy/MM/dd-HH:mm:ss") : String {
+            return SimpleDateFormat(format, Locale.getDefault()).format(calendar.time)
+        }
 
         fun getCurrentDateFormated(format: String = "yyyy/MM/dd-HH:mm:ss") : String {
             return SimpleDateFormat(format, Locale.getDefault()).format(Calendar.getInstance().time)

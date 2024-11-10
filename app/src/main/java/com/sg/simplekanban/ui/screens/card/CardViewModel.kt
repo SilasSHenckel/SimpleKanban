@@ -32,6 +32,12 @@ class CardViewModel @Inject constructor(
     var showSelectResponsibleDialog by mutableStateOf(false)
     var showSelectPriorityDialog by mutableStateOf(false)
 
+    var showSelectStartDateDialog by mutableStateOf(false)
+    var showSelectFinalDateDialog by mutableStateOf(false)
+
+    var startDate by mutableStateOf<String?>(null)
+    var finalDate by mutableStateOf<String?>(null)
+
     var responsible by mutableStateOf<User?>(null)
     var author by mutableStateOf<User?>(null)
 

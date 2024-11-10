@@ -58,6 +58,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.sg.simplekanban.R
+import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.ui.components.DeleteCardDialog
 import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
@@ -68,6 +69,7 @@ import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.ui.components.DateAndTimePickerDialog
 import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.components.MyTextField
 import com.sg.simplekanban.ui.components.SelectPriorityDialog
@@ -204,20 +206,21 @@ fun CardScreen (
             val configuration = LocalConfiguration.current
             val width = configuration.screenWidthDp.dp / 5
 
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
 
                 val selectedPriority = cardViewModel.priority
 
                 Button(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .width((configuration.screenWidthDp.dp/2)-30.dp)
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
-                                    Color((selectedPriority?.color1 ?: "9E9E9E").toColorInt()),
-                                    Color((selectedPriority?.color2 ?: "3E3E3E").toColorInt())
+                                    Color((selectedPriority?.color1 ?: "#9E9E9E").toColorInt()),
+                                    Color((selectedPriority?.color2 ?: "#3E3E3E").toColorInt())
                                 )
                             ), shape = RoundedCornerShape(8.dp)
                         )
@@ -238,6 +241,38 @@ fun CardScreen (
                     ){
                         Image(painter = painterResource(id = R.drawable.priority), contentDescription = "finuto minal", Modifier.size(18.dp))
                         Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase())
+                    }
+
+                }
+
+                Button(
+                    modifier = Modifier
+                        .width((configuration.screenWidthDp.dp/2)-30.dp)
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color("#57D8E6".toColorInt()),
+                                    Color("#096DE4".toColorInt())
+                                )
+                            ), shape = RoundedCornerShape(8.dp)
+                        )
+                        .height(30.dp),
+                    contentPadding = PaddingValues(5.dp),
+
+                    onClick = {
+                        cardViewModel.showSelectPriorityDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
+                        Text( stringResource(id = R.string.create_checklist).uppercase())
                     }
 
                 }
@@ -361,13 +396,13 @@ fun CardScreen (
                         fontSize = 20.sp
                     )
 
-                    val startDate = card?.startDate
+                    val startDate = cardViewModel.startDate ?: card?.startDate
 
                     Text(
                         modifier = Modifier
                             .width((width * 3) - 52.dp)
                             .clickable {
-                                //TODO
+                                cardViewModel.showSelectStartDateDialog = true
                             },
                         text = if(startDate != null) startDate else stringResource(id = R.string.select),
                         color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
@@ -392,13 +427,13 @@ fun CardScreen (
                         fontSize = 20.sp
                     )
 
-                    val endDate = card?.endDate
+                    val endDate = cardViewModel.finalDate ?: card?.endDate
 
                     Text(
                         modifier = Modifier
                             .width((width * 3) - 52.dp)
                             .clickable {
-                                //TODO
+                                cardViewModel.showSelectFinalDateDialog = true
                             },
                         text =  if(endDate != null) endDate else stringResource(id = R.string.select),
                         color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
@@ -482,6 +517,26 @@ fun CardScreen (
             )
         }
 
+        if(cardViewModel.showSelectStartDateDialog){
+            DateAndTimePickerDialog(
+                onConfirm = { date ->
+                    cardViewModel.startDate = DateUtil.getDateFormated(date)
+                    if(!showButton) showButton = true
+                },
+                onDismiss = { cardViewModel.showSelectStartDateDialog = false },
+            )
+        }
+
+        if(cardViewModel.showSelectFinalDateDialog){
+            DateAndTimePickerDialog(
+                onConfirm = { date ->
+                    cardViewModel.finalDate = DateUtil.getDateFormated(date)
+                    if(!showButton) showButton = true
+                },
+                onDismiss = {cardViewModel.showSelectFinalDateDialog = false},
+            )
+        }
+
         val isLoading = cardViewModel.isLoading
         if(isLoading) MyProgressBar()
     }
@@ -517,11 +572,13 @@ fun onUpdateClick(
 ){
     if(card != null){
         if(!title.isNullOrEmpty()){
-            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId, cardViewModel.priority?.id ?: card.priority)){
+            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId, cardViewModel.priority?.id ?: card.priority, cardViewModel)){
                 card.title = title
                 card.description = description
                 card.responsibleId = cardViewModel.responsible?.documentId
                 card.priority = cardViewModel.priority?.id ?: card.priority
+                card.startDate = cardViewModel.startDate ?: card.startDate
+                card.endDate = cardViewModel.finalDate ?: card.endDate
                 cardViewModel.updateCard(card, nav)
             } else {
                 nav.popBackStack()
@@ -537,9 +594,15 @@ fun verifyIfHasChangesInCard(
     title: String?,
     description: String,
     responsibleId: String?,
-    selectedPriority: Int
+    selectedPriority: Int,
+    cardViewModel: CardViewModel
 ) : Boolean{
-    return card.title != title || card.description != description || card.responsibleId != responsibleId || card.priority != selectedPriority
+    return card.title != title ||
+            card.description != description ||
+            card.responsibleId != responsibleId ||
+            card.priority != selectedPriority ||
+            card.startDate != cardViewModel.startDate ||
+            card.endDate != cardViewModel.finalDate
 }
 
 @Composable
