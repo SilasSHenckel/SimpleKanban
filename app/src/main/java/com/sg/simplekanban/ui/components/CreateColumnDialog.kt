@@ -74,7 +74,7 @@ fun CreateColumnDialog (
 
                 Text(
                     modifier = Modifier.padding(start = 10.dp),
-                    text = stringResource(id = R.string.create_column),
+                    text = stringResource(id = if(columnToEdit == null) R.string.create_column else R.string.change_kanban_name),
                     color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,

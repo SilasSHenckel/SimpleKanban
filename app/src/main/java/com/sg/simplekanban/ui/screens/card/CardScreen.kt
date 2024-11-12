@@ -187,7 +187,7 @@ fun CardScreen (
                 text = title,
                 onValueChange = { newText ->
                     if(newText.text != title.text && !showButton) showButton = true
-                    title = newText
+                    if(newText.text.length < 62) title = newText
                 }
             )
 
@@ -197,7 +197,7 @@ fun CardScreen (
                 text = description,
                 onValueChange = { newText ->
                     if(newText.text != description.text && !showButton) showButton = true
-                    description = newText
+                    if(newText.text.length < 500) description = newText
                 }
             )
 
@@ -235,12 +235,12 @@ fun CardScreen (
                     Row (
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .padding(horizontal = 7.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         Image(painter = painterResource(id = R.drawable.priority), contentDescription = "finuto minal", Modifier.size(18.dp))
-                        Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase())
+                        Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase(), fontSize = 12.sp, color = Color.White)
                     }
 
                 }
@@ -267,12 +267,12 @@ fun CardScreen (
                     Row (
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .padding(horizontal = 7.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
-                        Text( stringResource(id = R.string.create_checklist).uppercase())
+                        Text(text = stringResource(id = R.string.create_checklist).uppercase(), fontSize = 12.sp, color = Color.White)
                     }
 
                 }
@@ -280,59 +280,7 @@ fun CardScreen (
 
             Spacer(modifier = Modifier.height(34.dp))
 
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-
-                Text(
-                    modifier = Modifier
-                        .width(width * 2)
-                        .padding(start = 20.dp),
-                    text = stringResource(id = R.string.responsible),
-                    color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 20.sp
-                )
-
-                val responsible = cardViewModel.responsible
-
-                if(responsible?.photoUrl == null){
-                    Image(
-                        painter = painterResource(id = R.drawable.profile),
-                        contentDescription = "user",
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                    )
-                } else {
-                    GlideImage(
-                        model = responsible.photoUrl,
-                        contentDescription = "user",
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(RoundedCornerShape(15.dp)),
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    modifier = Modifier
-                        .width((width * 3) - 52.dp)
-                        .clickable {
-                            cardViewModel.showSelectResponsibleDialog = true
-                        },
-                    text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
-                    color = colorResource(id = R.color.title),
-                    fontSize = 20.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            if(!isCreatingCard){
-
+            if (KanbanInMemory.currentKanban?.shared == true){
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -342,25 +290,25 @@ fun CardScreen (
                         modifier = Modifier
                             .width(width * 2)
                             .padding(start = 20.dp),
-                        text = stringResource(id = R.string.creator),
+                        text = stringResource(id = R.string.responsible),
                         color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp
+                        fontSize = 18.sp
                     )
 
-                    val author = cardViewModel.author
+                    val responsible = cardViewModel.responsible
 
-                    if(author?.photoUrl == null ){
+                    if(responsible?.photoUrl == null){
                         Image(
                             painter = painterResource(id = R.drawable.profile),
                             contentDescription = "user",
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(20.dp))
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(15.dp))
                         )
                     } else {
                         GlideImage(
-                            model = author.photoUrl,
+                            model = responsible.photoUrl,
                             contentDescription = "user",
                             modifier = Modifier
                                 .size(30.dp)
@@ -372,14 +320,71 @@ fun CardScreen (
 
                     Text(
                         modifier = Modifier
-                            .width((width * 3) - 52.dp),
-                        text = author?.name ?: (author?.email ?: ""),
+                            .width((width * 3) - 52.dp)
+                            .clickable {
+                                cardViewModel.showSelectResponsibleDialog = true
+                            },
+                        text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
                         color = colorResource(id = R.color.title),
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(30.dp))
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            if(!isCreatingCard){
+                if (KanbanInMemory.currentKanban?.shared == true){
+                    Row (
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+
+                        Text(
+                            modifier = Modifier
+                                .width(width * 2)
+                                .padding(start = 20.dp),
+                            text = stringResource(id = R.string.creator),
+                            color = colorResource(id = R.color.title),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp
+                        )
+
+                        val author = cardViewModel.author
+
+                        if(author?.photoUrl == null ){
+                            Image(
+                                painter = painterResource(id = R.drawable.profile),
+                                contentDescription = "user",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                            )
+                        } else {
+                            GlideImage(
+                                model = author.photoUrl,
+                                contentDescription = "user",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(RoundedCornerShape(15.dp)),
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            modifier = Modifier
+                                .width((width * 3) - 52.dp),
+                            text = author?.name ?: (author?.email ?: ""),
+                            color = colorResource(id = R.color.title),
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Row (
                     modifier = Modifier.fillMaxWidth(),
@@ -393,7 +398,7 @@ fun CardScreen (
                         text = stringResource(id = R.string.start_date),
                         color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp
+                        fontSize = 18.sp
                     )
 
                     val startDate = cardViewModel.startDate ?: card?.startDate
@@ -406,11 +411,11 @@ fun CardScreen (
                             },
                         text = if(startDate != null) startDate else stringResource(id = R.string.select),
                         color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Row (
                     modifier = Modifier.fillMaxWidth(),
@@ -424,7 +429,7 @@ fun CardScreen (
                         text = stringResource(id = R.string.end_date),
                         color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp
+                        fontSize = 18.sp
                     )
 
                     val endDate = cardViewModel.finalDate ?: card?.endDate
@@ -437,11 +442,11 @@ fun CardScreen (
                             },
                         text =  if(endDate != null) endDate else stringResource(id = R.string.select),
                         color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(34.dp))
 
                 //COMENTS
                 Text(
@@ -450,7 +455,7 @@ fun CardScreen (
                     text = stringResource(id = R.string.comments),
                     color = colorResource(id = R.color.title),
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 24.sp
+                    fontSize = 20.sp
                 )
 
                 var coment by remember { mutableStateOf(TextFieldValue("")) }

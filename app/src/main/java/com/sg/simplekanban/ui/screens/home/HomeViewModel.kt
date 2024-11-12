@@ -269,6 +269,16 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    fun getCardMember(memberId: String?, members: List<User>) : User? {
+        if(memberId == null) return null
+
+        for(member in members){
+            if(member.documentId == memberId) return member
+        }
+
+        return null
+    }
+
 }
 
 

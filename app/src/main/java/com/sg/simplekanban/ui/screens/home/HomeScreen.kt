@@ -31,6 +31,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +63,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
+import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.ui.components.EditKanbanNameDialog
 import com.sg.simplekanban.ui.components.HomeOptionsDialog
@@ -285,6 +287,8 @@ fun MyBody(
             .fillMaxSize()
             .padding(bottom = 60.dp)
     ) {
+        
+        val kanbanMembers = KanbanInMemory.kanbanMembers
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(space = 16.dp),
@@ -298,7 +302,7 @@ fun MyBody(
             }
 
             itemsIndexed(cardList) { index: Int, card: Card ->
-                MyListItem(card = card, nav, homeViewModel, columns, isShowingDialog)
+                MyListItem(card = card, nav, homeViewModel, columns, isShowingDialog, kanbanMembers)
             }
         }
     }
@@ -344,14 +348,15 @@ fun MyButtonAddCard(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun MyListItem(
     card: Card,
     nav: NavHostController,
     homeViewModel: HomeViewModel,
     columns: List<Column>,
-    isShowingDialog: Boolean
+    isShowingDialog: Boolean,
+    kanbanMembers: List<User>
 ){
 
     if (isShowingDialog){
@@ -387,7 +392,9 @@ fun MyListItem(
     ) {
 
         Text(
-            modifier = Modifier.align(Alignment.CenterStart).padding(top = 20.dp, start = 20.dp, bottom = 25.dp, end = 20.dp),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(top = 20.dp, start = 20.dp, bottom = 25.dp, end = if(kanbanMembers.isNotEmpty() && card.responsibleId != null) 60.dp else 20.dp),
             text = card.title ?: "",
             color = colorResource(id = R.color.title),
             fontWeight = FontWeight.Normal,
@@ -411,6 +418,43 @@ fun MyListItem(
                 .width(priorityWidth[card.priority] ?: 15.dp)
         ) {
             
+        }
+        
+        if(kanbanMembers.isNotEmpty() && card.responsibleId != null){
+            val responsible = homeViewModel.getCardMember(card.responsibleId!!, kanbanMembers)
+            if(responsible?.photoUrl == null){
+                val name = responsible?.name
+                if(name != null){
+                    Box(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp)){
+                        Icon(
+                            imageVector = Icons.Rounded.Circle,
+                            contentDescription = "circle",
+                            tint = SelectedBlue,
+                            modifier = Modifier
+                                .size(30.dp)
+                                .align(Alignment.Center)
+                        )
+                        Text(
+                            text = name.first().toString(),
+                            color = Color.White,
+                            modifier = Modifier.align(Alignment.Center),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            } else {
+                Row (modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp)) {
+                    GlideImage(
+                        model = responsible.photoUrl,
+                        contentDescription = "user",
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                        ,
+                    )
+                }
+            }
         }
     }
 }

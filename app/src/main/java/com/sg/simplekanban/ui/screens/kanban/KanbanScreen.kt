@@ -3,20 +3,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,6 +45,7 @@ import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.ui.components.CreateColumnDialog
 import com.sg.simplekanban.ui.components.CreateKanbanDialog
+import com.sg.simplekanban.ui.components.DeleteKanbanDialog
 import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.components.MyToolBar
 import com.sg.simplekanban.ui.theme.BlueDark
@@ -72,6 +80,14 @@ fun KanbanScreen(
             )
         }
 
+        if(kanbanViewModel?.showDeleteKanbanDialog != null){
+            DeleteKanbanDialog(
+                kanban = kanbanViewModel.showDeleteKanbanDialog!!,
+                kanbanViewModel = kanbanViewModel,
+                setShowDialog = { kanbanViewModel.showDeleteKanbanDialog = it }
+            )
+        }
+
         val isLoading = kanbanViewModel?.isLoading ?: false
         if(isLoading) MyProgressBar()
     }
@@ -88,56 +104,86 @@ fun MyBody(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp)
     ) {
 
-        MyButtonAddKanban()
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = stringResource(id = R.string.my_kanbans),
-            color = colorResource(id = R.color.title),
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 18.sp
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 16.dp),
-        ) {
-            items(kanbans.size){
-                MyListItem(kanbans[it], nav, kanbanViewModel, true)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
 
         val sharedWithMeKanbans = kanbanViewModel?.sharedWithMeKanbans
 
-        if(!sharedWithMeKanbans.isNullOrEmpty()){
-            Text(
-                text = stringResource(id = R.string.shared_with_me),
-                color = colorResource(id = R.color.title),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
-            )
+        BoxWithConstraints {
+            val parentHeight = maxHeight
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(top = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
             ) {
-                items(sharedWithMeKanbans.size){
-                    MyListItem(sharedWithMeKanbans[it], nav, kanbanViewModel, false)
+
+                item {
+                    MyButtonAddKanban()
+                }
+
+                item {
+
+                    Column {
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(id = R.string.my_kanbans),
+                            color = colorResource(id = R.color.title),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp
+                        )
+                    }
+
+
+                }
+
+                item {
+                    LazyVerticalGrid(
+                        modifier = Modifier.heightIn(max = parentHeight),
+                        columns = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        items(kanbans.size) {
+                            MyListItem(kanbans[it], nav, kanbanViewModel, true)
+                        }
+                    }
+                }
+
+                if (!sharedWithMeKanbans.isNullOrEmpty()) {
+                    item {
+
+                        Column {
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.shared_with_me),
+                                color = colorResource(id = R.color.title),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            )
+                        }
+
+                    }
+
+                    item {
+                        LazyVerticalGrid(
+                            modifier = Modifier.heightIn(max = parentHeight),
+                            columns = GridCells.Fixed(2),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            items(sharedWithMeKanbans.size) {
+                                MyListItem(sharedWithMeKanbans[it], nav, kanbanViewModel, false)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-
 }
 
 @Composable
@@ -199,17 +245,39 @@ fun MyListItem(
             )
             .padding(16.dp)
             .clickable {
-                val kanbanUserId = if(isMyKanban) kanbanViewModel?.userId else kanbanViewModel?.getUserIdBySharedWithMeKanban(kanban.documentId)
+                val kanbanUserId =
+                    if (isMyKanban) kanbanViewModel?.userId else kanbanViewModel?.getUserIdBySharedWithMeKanban(
+                        kanban.documentId
+                    )
                 kanbanViewModel?.selectKanban(kanbanUserId, kanban, nav)
             }
     ) {
         Text(
+            modifier = Modifier.padding(end = if(isMyKanban) 28.dp else 0.dp),
             text = kanban.name ?: "",
             textAlign = TextAlign.Start,
             color = if(isCurrentKanban) Color.White else colorResource(id = R.color.title),
             fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
+            fontSize = 19.sp
         )
+
+        if(isMyKanban){
+            IconButton(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(25.dp),
+                onClick = {
+                    kanbanViewModel?.showDeleteKanbanDialog = kanban
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = null,
+                    tint = colorResource(id = if(isCurrentKanban) R.color.white else R.color.title)
+                )
+            }
+        }
+
     }
 }
 

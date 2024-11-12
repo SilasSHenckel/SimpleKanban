@@ -40,6 +40,8 @@ class KanbanViewModel @Inject constructor(
 
     var showNewKanbanDialog by mutableStateOf(false)
 
+    var showDeleteKanbanDialog by mutableStateOf<Kanban?>(null)
+
     var currentUser : User? = null
 
     var sharedWithMeKanbans by mutableStateOf<List<Kanban>>(listOf())
@@ -219,6 +221,31 @@ class KanbanViewModel @Inject constructor(
                 isLoading = false
                 //error
             }
+        }
+    }
+
+    fun deleteKanban( kanban: Kanban, setShowDialog: (Kanban?) -> Unit) = viewModelScope.launch {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if(kanban.documentId != null && userId != null){
+            isLoading = true
+            kanbanUseCase.delete(
+                userId,
+                kanban.documentId!!,
+                onError = {
+                    isLoading = false
+
+                    setShowDialog(null)
+                },
+                onSuccess = {
+                    isLoading = false
+                    val newList : MutableList<Kanban> = mutableListOf()
+                    newList.addAll(kanbans)
+                    newList.remove(kanban)
+                    kanbans = newList
+
+                    setShowDialog(null)
+                }
+            )
         }
     }
 }

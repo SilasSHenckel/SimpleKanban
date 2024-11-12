@@ -16,6 +16,7 @@
     <string name="title">Título</string>
     <string name="description">Descrição</string>
     <string name="delete_card">"DESEJA APAGAR ESTE CARD?"</string>
+    <string name="delete_kanban">"DESEJA APAGAR ESTE KANBAN"</string>
     <string name="delete">APAGAR</string>
     <string name="cancel">CANCELAR</string>
     <string name="card_moved">CARD MOVIDO PARA:</string>

@@ -16,6 +16,7 @@
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="delete_card">"DO YOU WANT TO DELETE THIS CARD?"</string>
+    <string name="delete_kanban">"DO YOU WANT TO DELETE THIS KANBAN"</string>
     <string name="delete">DELETE</string>
     <string name="cancel">CANCEL</string>
     <string name="card_moved">CARD MOVED TO:</string>
