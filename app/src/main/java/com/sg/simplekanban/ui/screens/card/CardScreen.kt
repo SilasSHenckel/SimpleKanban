@@ -17,11 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,21 +59,21 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.ui.components.DeleteCardDialog
-import com.sg.simplekanban.ui.theme.MenuBackgroundGrey
 import com.sg.simplekanban.ui.theme.PlaceholderGrey
 import com.sg.simplekanban.ui.theme.Purple40
 import com.sg.simplekanban.ui.theme.SelectedBlue
-import com.sg.simplekanban.ui.theme.TitleGrey
 import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.ui.components.DateAndTimePickerDialog
+import com.sg.simplekanban.ui.components.MyCommentTextField
 import com.sg.simplekanban.ui.components.MyProgressBar
-import com.sg.simplekanban.ui.components.MyTextField
 import com.sg.simplekanban.ui.components.SelectPriorityDialog
 import com.sg.simplekanban.ui.components.SelectUserDialog
 
@@ -104,7 +106,6 @@ fun CardScreen (
     ){
 
         Column {
-
             Box (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,306 +182,354 @@ fun CardScreen (
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(color = colorResource(id = R.color.background))) {
 
-            TitleTextField(
-                text = title,
-                onValueChange = { newText ->
-                    if(newText.text != title.text && !showButton) showButton = true
-                    if(newText.text.length < 62) title = newText
-                }
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            DescriptionTextField(
-                text = description,
-                onValueChange = { newText ->
-                    if(newText.text != description.text && !showButton) showButton = true
-                    if(newText.text.length < 500) description = newText
-                }
-            )
-
-            Spacer(modifier = Modifier.height(34.dp))
-
-            val configuration = LocalConfiguration.current
-            val width = configuration.screenWidthDp.dp / 5
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                val selectedPriority = cardViewModel.priority
-
-                Button(
-                    modifier = Modifier
-                        .width((configuration.screenWidthDp.dp/2)-30.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color((selectedPriority?.color1 ?: "#9E9E9E").toColorInt()),
-                                    Color((selectedPriority?.color2 ?: "#3E3E3E").toColorInt())
-                                )
-                            ), shape = RoundedCornerShape(8.dp)
-                        )
-                        .height(30.dp),
-                    contentPadding = PaddingValues(5.dp),
-
-                    onClick = {
-                        cardViewModel.showSelectPriorityDialog = true
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
-                    Row (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 7.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Image(painter = painterResource(id = R.drawable.priority), contentDescription = "finuto minal", Modifier.size(18.dp))
-                        Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase(), fontSize = 12.sp, color = Color.White)
-                    }
-
-                }
-
-                Button(
-                    modifier = Modifier
-                        .width((configuration.screenWidthDp.dp/2)-30.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color("#57D8E6".toColorInt()),
-                                    Color("#096DE4".toColorInt())
-                                )
-                            ), shape = RoundedCornerShape(8.dp)
-                        )
-                        .height(30.dp),
-                    contentPadding = PaddingValues(5.dp),
-
-                    onClick = {
-                        cardViewModel.showSelectPriorityDialog = true
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
-                    Row (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 7.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
-                        Text(text = stringResource(id = R.string.create_checklist).uppercase(), fontSize = 12.sp, color = Color.White)
-                    }
-
-                }
             }
 
-            Spacer(modifier = Modifier.height(34.dp))
+            LazyColumn {
+                item {
+                    Column {
 
-            if (KanbanInMemory.currentKanban?.shared == true){
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                    Text(
-                        modifier = Modifier
-                            .width(width * 2)
-                            .padding(start = 20.dp),
-                        text = stringResource(id = R.string.responsible),
-                        color = colorResource(id = R.color.title),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 18.sp
-                    )
-
-                    val responsible = cardViewModel.responsible
-
-                    if(responsible?.photoUrl == null){
-                        Image(
-                            painter = painterResource(id = R.drawable.profile),
-                            contentDescription = "user",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(RoundedCornerShape(15.dp))
-                        )
-                    } else {
-                        GlideImage(
-                            model = responsible.photoUrl,
-                            contentDescription = "user",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(RoundedCornerShape(15.dp)),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Text(
-                        modifier = Modifier
-                            .width((width * 3) - 52.dp)
-                            .clickable {
-                                cardViewModel.showSelectResponsibleDialog = true
-                            },
-                        text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
-                        color = colorResource(id = R.color.title),
-                        fontSize = 16.sp
-                    )
-                }
-            }
-
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            if(!isCreatingCard){
-                if (KanbanInMemory.currentKanban?.shared == true){
-                    Row (
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-
-                        Text(
-                            modifier = Modifier
-                                .width(width * 2)
-                                .padding(start = 20.dp),
-                            text = stringResource(id = R.string.creator),
-                            color = colorResource(id = R.color.title),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 18.sp
+                        TitleTextField(
+                            text = title,
+                            onValueChange = { newText ->
+                                if(newText.text != title.text && !showButton) showButton = true
+                                if(newText.text.length < 62) title = newText
+                            }
                         )
 
-                        val author = cardViewModel.author
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        if(author?.photoUrl == null ){
-                            Image(
-                                painter = painterResource(id = R.drawable.profile),
-                                contentDescription = "user",
+                        DescriptionTextField(
+                            text = description,
+                            onValueChange = { newText ->
+                                if(newText.text != description.text && !showButton) showButton = true
+                                if(newText.text.length < 500) description = newText
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(34.dp))
+
+                        val configuration = LocalConfiguration.current
+                        val width = configuration.screenWidthDp.dp / 5
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+
+                            val selectedPriority = cardViewModel.priority
+
+                            Button(
                                 modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(RoundedCornerShape(15.dp))
+                                    .width((configuration.screenWidthDp.dp / 2) - 30.dp)
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color(
+                                                    (selectedPriority?.color1
+                                                        ?: "#9E9E9E").toColorInt()
+                                                ),
+                                                Color(
+                                                    (selectedPriority?.color2
+                                                        ?: "#3E3E3E").toColorInt()
+                                                )
+                                            )
+                                        ), shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .height(30.dp),
+                                contentPadding = PaddingValues(5.dp),
+
+                                onClick = {
+                                    cardViewModel.showSelectPriorityDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                            ) {
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 7.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
+                                    Image(painter = painterResource(id = R.drawable.priority), contentDescription = "finuto minal", Modifier.size(18.dp))
+                                    Text(selectedPriority?.name?.uppercase() ?: stringResource(id = R.string.select_priority).uppercase(), fontSize = 12.sp, color = Color.White)
+                                }
+
+                            }
+
+                            Button(
+                                modifier = Modifier
+                                    .width((configuration.screenWidthDp.dp / 2) - 30.dp)
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color("#57D8E6".toColorInt()),
+                                                Color("#096DE4".toColorInt())
+                                            )
+                                        ), shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .height(30.dp),
+                                contentPadding = PaddingValues(5.dp),
+
+                                onClick = {
+                                    cardViewModel.showSelectPriorityDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                            ) {
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 7.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
+                                    Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
+                                    Text(text = stringResource(id = R.string.create_checklist).uppercase(), fontSize = 12.sp, color = Color.White)
+                                }
+
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(34.dp))
+
+                        if (KanbanInMemory.currentKanban?.shared == true){
+                            Row (
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+
+                                Text(
+                                    modifier = Modifier
+                                        .width(width * 2)
+                                        .padding(start = 20.dp),
+                                    text = stringResource(id = R.string.responsible),
+                                    color = colorResource(id = R.color.title),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 18.sp
+                                )
+
+                                val responsible = cardViewModel.responsible
+
+                                if(responsible?.photoUrl == null){
+                                    Image(
+                                        painter = painterResource(id = R.drawable.profile),
+                                        contentDescription = "user",
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .clip(RoundedCornerShape(15.dp))
+                                    )
+                                } else {
+                                    GlideImage(
+                                        model = responsible.photoUrl,
+                                        contentDescription = "user",
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .clip(RoundedCornerShape(15.dp)),
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Text(
+                                    modifier = Modifier
+                                        .width((width * 3) - 52.dp)
+                                        .clickable {
+                                            cardViewModel.showSelectResponsibleDialog = true
+                                        },
+                                    text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
+                                    color = colorResource(id = R.color.title),
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        if(!isCreatingCard){
+                            if (KanbanInMemory.currentKanban?.shared == true){
+                                Row (
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
+
+                                    Text(
+                                        modifier = Modifier
+                                            .width(width * 2)
+                                            .padding(start = 20.dp),
+                                        text = stringResource(id = R.string.creator),
+                                        color = colorResource(id = R.color.title),
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 18.sp
+                                    )
+
+                                    val author = cardViewModel.author
+
+                                    if(author?.photoUrl == null ){
+                                        Image(
+                                            painter = painterResource(id = R.drawable.profile),
+                                            contentDescription = "user",
+                                            modifier = Modifier
+                                                .size(30.dp)
+                                                .clip(RoundedCornerShape(15.dp))
+                                        )
+                                    } else {
+                                        GlideImage(
+                                            model = author.photoUrl,
+                                            contentDescription = "user",
+                                            modifier = Modifier
+                                                .size(30.dp)
+                                                .clip(RoundedCornerShape(15.dp)),
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    Text(
+                                        modifier = Modifier
+                                            .width((width * 3) - 52.dp),
+                                        text = author?.name ?: (author?.email ?: ""),
+                                        color = colorResource(id = R.color.title),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Row (
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+                                //start date
+                                Text(
+                                    modifier = Modifier
+                                        .width(width * 2)
+                                        .padding(start = 20.dp),
+                                    text = stringResource(id = R.string.start_date),
+                                    color = colorResource(id = R.color.title),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 18.sp
+                                )
+
+                                val startDate = cardViewModel.startDate ?: card?.startDate
+
+                                Text(
+                                    modifier = Modifier
+                                        .width((width * 3) - 52.dp)
+                                        .clickable {
+                                            cardViewModel.showSelectStartDateDialog = true
+                                        },
+                                    text = if(startDate != null) startDate else stringResource(id = R.string.select),
+                                    color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
+                                    fontSize = 16.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Row (
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+                                //end date
+                                Text(
+                                    modifier = Modifier
+                                        .width(width * 2)
+                                        .padding(start = 20.dp),
+                                    text = stringResource(id = R.string.end_date),
+                                    color = colorResource(id = R.color.title),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 18.sp
+                                )
+
+                                val endDate = cardViewModel.finalDate ?: card?.endDate
+
+                                Text(
+                                    modifier = Modifier
+                                        .width((width * 3) - 52.dp)
+                                        .clickable {
+                                            cardViewModel.showSelectFinalDateDialog = true
+                                        },
+                                    text =  if(endDate != null) endDate else stringResource(id = R.string.select),
+                                    color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
+                                    fontSize = 16.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(34.dp))
+
+                            //COMENTS
+                            Text(
+                                modifier = Modifier
+                                    .padding(start = 20.dp),
+                                text = stringResource(id = R.string.comments),
+                                color = colorResource(id = R.color.title),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp
                             )
-                        } else {
-                            GlideImage(
-                                model = author.photoUrl,
-                                contentDescription = "user",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(RoundedCornerShape(15.dp)),
+
+                            val keyboardController = LocalSoftwareKeyboardController.current
+                            var newComment by remember { mutableStateOf(TextFieldValue("")) }
+                            var showCommentButton by remember { mutableStateOf(false) }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+
+                            MyCommentTextField(
+                                text = newComment,
+                                onValueChange = { newText ->
+                                    if(newText.text != newComment.text && !showCommentButton) showCommentButton = true
+                                    if(newText.text.length < 100) newComment = newText
+                                    if(showCommentButton && newText.text.isEmpty()) showCommentButton = false
+                                },
+                                placeholderText = stringResource(id = R.string.write_comment),
+                                width = configuration.screenWidthDp.dp - 23.dp,
+                                paddingStart = 23.dp,
+                                showSendButton = showCommentButton,
+                                onSendClicked = {
+                                    cardViewModel.saveComment(commentText = newComment.text,
+                                        onCommentSaved =  {
+                                            newComment = TextFieldValue("")
+                                        }
+                                    )
+                                    keyboardController?.hide()
+                                }
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            modifier = Modifier
-                                .width((width * 3) - 52.dp),
-                            text = author?.name ?: (author?.email ?: ""),
-                            color = colorResource(id = R.color.title),
-                            fontSize = 16.sp
-                        )
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 
+                val comments = cardViewModel.comments
 
-                Spacer(modifier = Modifier.height(20.dp))
+                if(comments.isNotEmpty()){
+                    items(comments.size){ index ->
+                        Row (modifier = Modifier.padding(start = 5.dp, end = 5.dp , bottom = 12.dp)) {
+                            CommentItem(comment = comments[index], cardViewModel = cardViewModel)
+                        }
+                    }
 
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    //start date
-                    Text(
-                        modifier = Modifier
-                            .width(width * 2)
-                            .padding(start = 20.dp),
-                        text = stringResource(id = R.string.start_date),
-                        color = colorResource(id = R.color.title),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 18.sp
-                    )
-
-                    val startDate = cardViewModel.startDate ?: card?.startDate
-
-                    Text(
-                        modifier = Modifier
-                            .width((width * 3) - 52.dp)
-                            .clickable {
-                                cardViewModel.showSelectStartDateDialog = true
-                            },
-                        text = if(startDate != null) startDate else stringResource(id = R.string.select),
-                        color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
-                        fontSize = 16.sp
-                    )
+                    item{
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    //end date
-                    Text(
-                        modifier = Modifier
-                            .width(width * 2)
-                            .padding(start = 20.dp),
-                        text = stringResource(id = R.string.end_date),
-                        color = colorResource(id = R.color.title),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 18.sp
-                    )
-
-                    val endDate = cardViewModel.finalDate ?: card?.endDate
-
-                    Text(
-                        modifier = Modifier
-                            .width((width * 3) - 52.dp)
-                            .clickable {
-                                cardViewModel.showSelectFinalDateDialog = true
-                            },
-                        text =  if(endDate != null) endDate else stringResource(id = R.string.select),
-                        color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
-                        fontSize = 16.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(34.dp))
-
-                //COMENTS
-                Text(
-                    modifier = Modifier
-                        .padding(start = 20.dp),
-                    text = stringResource(id = R.string.comments),
-                    color = colorResource(id = R.color.title),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp
-                )
-
-                var coment by remember { mutableStateOf(TextFieldValue("")) }
-                var showCommentButton by remember { mutableStateOf(false) }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-
-                MyTextField(
-                    text = coment,
-                    onValueChange = { newText ->
-                        if(newText.text != coment.text && !showCommentButton) showCommentButton = true
-                        if(newText.text.length < 20) coment = newText
-                    },
-                    placeholderText = stringResource(id = R.string.write_comment),
-                    width = configuration.screenWidthDp.dp - 23.dp,
-                    paddingStart = 23.dp
-                )
-
-
-
             }
-
-
         }
+
+
+
+
 
         if(!isCreatingCard){
             val showDeleteCardDialog = cardViewModel.showDeleteCardDialog
@@ -661,5 +710,95 @@ fun DescriptionTextField(
             fontSize = 18.sp
         )}
     )
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun CommentItem(
+    comment: Comment,
+    cardViewModel: CardViewModel
+){
+
+    val isAuthorCurrentUser = comment.authorId == FirebaseAuth.getInstance().currentUser?.uid
+
+    Column (modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            start = if (isAuthorCurrentUser) 20.dp else 50.dp,
+            end = if (isAuthorCurrentUser) 50.dp else 20.dp
+        )
+        .background(
+            color = colorResource(id = R.color.menu_background),
+            shape = RoundedCornerShape(
+                topStart = 30.dp,
+                topEnd = 30.dp,
+                bottomStart = if (isAuthorCurrentUser) 0.dp else 30.dp,
+                bottomEnd = if (isAuthorCurrentUser) 30.dp else 0.dp
+            )
+        )) {
+        Row (
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 20.dp, end = 5.dp, bottom = 10.dp, top = 10.dp)
+                .fillMaxWidth()
+        ){
+            Row {
+                val author = cardViewModel.getKanbanMember(comment.authorId)
+
+                if(author?.photoUrl == null ){
+                    Image(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "author",
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                    )
+                } else {
+                    GlideImage(
+                        model = author.photoUrl,
+                        contentDescription = "author",
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(15.dp)),
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    modifier = Modifier,
+                    text = author?.name ?: (author?.email ?: ""),
+                    color = colorResource(id = R.color.title),
+                    fontSize = 16.sp
+                )
+            }
+            IconButton(
+                onClick = { cardViewModel.showCommentOptionsDialog = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = null,
+                    tint = colorResource(id = R.color.title)
+                )
+            }
+        }
+
+        Text(
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp),
+            text = comment.text ?: "",
+            color = colorResource(id = R.color.title),
+            fontSize = 16.sp
+        )
+
+        Text(
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+            text = comment.creationDate ?: "",
+            color = colorResource(id = R.color.text),
+            fontSize = 12.sp
+        )
+
+    }
+
 }
 

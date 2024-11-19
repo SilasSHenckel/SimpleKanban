@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.inMemory.CardInMemory
@@ -14,8 +15,10 @@ import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.domain.CardUseCase
+import com.sg.simplekanban.domain.CommentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CardViewModel @Inject constructor(
     private val cardUseCase: CardUseCase,
+    private val commentUseCase: CommentUseCase,
     private val context: Context
 ): ViewModel() {
 
@@ -31,6 +35,7 @@ class CardViewModel @Inject constructor(
     var showDeleteCardDialog by mutableStateOf(false)
     var showSelectResponsibleDialog by mutableStateOf(false)
     var showSelectPriorityDialog by mutableStateOf(false)
+    var showCommentOptionsDialog by mutableStateOf(false)
 
     var showSelectStartDateDialog by mutableStateOf(false)
     var showSelectFinalDateDialog by mutableStateOf(false)
@@ -43,6 +48,8 @@ class CardViewModel @Inject constructor(
 
     var priority by mutableStateOf<Priority?>(null)
 
+    var comments by mutableStateOf<List<Comment>>(listOf())
+
     var priorities = listOf(
         Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
         Priority(1, context.getString(R.string.low_priority), "#73FF88", "#0BA923"),
@@ -51,9 +58,10 @@ class CardViewModel @Inject constructor(
     )
 
     init {
-        responsible = getCardMember(CardInMemory.card?.responsibleId)
-        author = getCardMember(CardInMemory.card?.ownerId)
+        responsible = getKanbanMember(CardInMemory.card?.responsibleId)
+        author = getKanbanMember(CardInMemory.card?.ownerId)
         loadCardPriority(CardInMemory.card?.priority)
+        loadCardComments()
     }
 
     private fun loadCardPriority(cardPriority: Int?){
@@ -197,7 +205,7 @@ class CardViewModel @Inject constructor(
         }
     }
 
-    fun getCardMember(memberId: String?) : User? {
+    fun getKanbanMember(memberId: String?) : User? {
         if(memberId == null) return null
 
         val members = KanbanInMemory.kanbanMembers
@@ -206,6 +214,91 @@ class CardViewModel @Inject constructor(
             if(member.documentId == memberId) return member
         }
 
+        return null
+    }
+
+    fun saveComment(commentText: String, onCommentSaved: () -> Unit) = viewModelScope.launch {
+
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
+        val cardId = CardInMemory.card?.documentId
+
+        if(currentKanbanUserId != null && currentKanbanId != null && cardId != null){
+
+            val comment = Comment(
+                documentId = null,
+                text = commentText,
+                authorId = FirebaseAuth.getInstance().currentUser?.uid,
+                creationDate = DateUtil.getCurrentDateFormated()
+            )
+
+            isLoading = true
+            commentUseCase.save(
+                userId = currentKanbanUserId,
+                kanbanId = currentKanbanId,
+                cardId = cardId,
+                comment = comment,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    isLoading = false
+                    onCommentSaved()
+                    comment.documentId = it
+                    addNewCommentInList(comment)
+                }
+            )
+        }
+    }
+
+    private fun loadCardComments() = viewModelScope.launch {
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        val currentKanban = KanbanInMemory.currentKanban
+        val cardId = CardInMemory.card?.documentId
+
+        if(currentKanbanUserId != null
+            && currentKanban != null
+            && currentKanban.documentId != null
+            && currentKanban.shared
+            && cardId != null){
+
+            isLoading = true
+
+            commentUseCase.getCommentsByCard(
+                userId = currentKanbanUserId,
+                kanbanId = currentKanban.documentId!!,
+                cardId = cardId,
+                onError = {
+                    isLoading = false
+                },
+                onSuccess = {
+                    isLoading = false
+                    comments = it
+                }
+            )
+        }
+    }
+
+    fun addNewCommentInList(comment: Comment){
+        val newList = mutableListOf<Comment>()
+        newList.addAll(comments)
+
+        val index = hasCommentInList(comment)
+
+        if(index != null) newList[index] = comment
+        else newList.add(comment)
+
+        newList.sortByDescending { it.creationDate }
+
+        comments = newList
+    }
+
+    private fun hasCommentInList(newComment: Comment): Int?{
+        for((index, comment) in comments.withIndex()){
+            if(newComment.documentId == comment.documentId){
+                return index
+            }
+        }
         return null
     }
 
