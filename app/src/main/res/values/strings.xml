@@ -31,6 +31,8 @@ Ao entrar, você concorda com nossa política de privacidade.</string>
     <string name="alternate_kanban">"Alternar Kanban"</string>
     <string name="my_profile">"Meu Perfil"</string>
     <string name="change_kanban_name">"Editar Nome"</string>
+    <string name="edit_comment">"Editar Comentário"</string>
+    <string name="comment">"Comentário"</string>
 
     <string name="columns">"Colunas"</string>
     <string name="add_column">ADICIONAR COLUNA</string>

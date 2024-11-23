@@ -11,6 +11,9 @@
     <color name="card_background">#252525</color>
     <color name="background">#1F1F1F</color>
 
+    <color name="comment_author_background">#FF272727</color>
+    <color name="comment_background">#FF3c3c3c</color>
+
     <color name="dark_transparent">#51000000</color>
 
 

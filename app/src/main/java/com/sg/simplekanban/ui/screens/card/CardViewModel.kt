@@ -21,6 +21,7 @@ import com.sg.simplekanban.domain.CardUseCase
 import com.sg.simplekanban.domain.CommentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.checkerframework.checker.units.qual.C
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,7 +36,8 @@ class CardViewModel @Inject constructor(
     var showDeleteCardDialog by mutableStateOf(false)
     var showSelectResponsibleDialog by mutableStateOf(false)
     var showSelectPriorityDialog by mutableStateOf(false)
-    var showCommentOptionsDialog by mutableStateOf(false)
+    var showCommentOptionsDialog by mutableStateOf<Comment?>(null)
+    var showEditCommentDialog by mutableStateOf<Comment?>(null)
 
     var showSelectStartDateDialog by mutableStateOf(false)
     var showSelectFinalDateDialog by mutableStateOf(false)
@@ -251,6 +253,73 @@ class CardViewModel @Inject constructor(
         }
     }
 
+    fun updateComment(comment: Comment, onFinish: () -> Unit) = viewModelScope.launch{
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        val currentKanban = KanbanInMemory.currentKanban
+        val cardId = CardInMemory.card?.documentId
+
+        if(currentKanbanUserId != null
+            && currentKanban != null
+            && currentKanban.documentId != null
+            && currentKanban.shared
+            && cardId != null){
+
+            isLoading = true
+
+            commentUseCase.update(
+                currentKanbanUserId,
+                kanbanId = currentKanban.documentId!!,
+                cardId = cardId,
+                comment = comment,
+                onError = {
+                    isLoading = false
+                    onFinish()
+                },
+                onSuccess = {
+                    isLoading = false
+                    onFinish()
+                    addNewCommentInList(comment)
+                }
+            )
+        } else {
+            onFinish()
+        }
+    }
+
+    fun deleteComment(comment: Comment, onFinish: () -> Unit) = viewModelScope.launch {
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        val currentKanban = KanbanInMemory.currentKanban
+        val cardId = CardInMemory.card?.documentId
+
+        if(currentKanbanUserId != null
+            && currentKanban != null
+            && currentKanban.documentId != null
+            && currentKanban.shared
+            && cardId != null
+            && comment.documentId != null){
+
+            isLoading = true
+
+            commentUseCase.delete(
+                currentKanbanUserId,
+                kanbanId = currentKanban.documentId!!,
+                cardId = cardId,
+                commentId = comment.documentId!!,
+                onError = {
+                    isLoading = false
+                    onFinish()
+                },
+                onSuccess = {
+                    isLoading = false
+                    onFinish()
+                    removeCommentFromList(comment)
+                }
+            )
+        } else {
+            onFinish()
+        }
+    }
+
     private fun loadCardComments() = viewModelScope.launch {
         val currentKanbanUserId = UserInMemory.currentKanbanUserId
         val currentKanban = KanbanInMemory.currentKanban
@@ -300,6 +369,16 @@ class CardViewModel @Inject constructor(
             }
         }
         return null
+    }
+
+    fun removeCommentFromList(commentToRemove: Comment?){
+        if (commentToRemove != null){
+            val newList = mutableListOf<Comment>()
+            newList.addAll(comments)
+            newList.remove(commentToRemove)
+
+            comments = newList
+        }
     }
 
 }

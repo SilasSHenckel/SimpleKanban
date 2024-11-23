@@ -71,7 +71,9 @@ import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Comment
+import com.sg.simplekanban.ui.components.CommentOptionsDialog
 import com.sg.simplekanban.ui.components.DateAndTimePickerDialog
+import com.sg.simplekanban.ui.components.EditCommentDialog
 import com.sg.simplekanban.ui.components.MyCommentTextField
 import com.sg.simplekanban.ui.components.MyProgressBar
 import com.sg.simplekanban.ui.components.SelectPriorityDialog
@@ -591,6 +593,22 @@ fun CardScreen (
             )
         }
 
+        if(cardViewModel.showCommentOptionsDialog != null){
+            CommentOptionsDialog(
+                cardViewModel,
+                setShowDialog = {cardViewModel.showCommentOptionsDialog = null},
+                comment = cardViewModel.showCommentOptionsDialog!!
+            )
+        }
+
+        if(cardViewModel.showEditCommentDialog != null){
+            EditCommentDialog(
+                cardViewModel,
+                setShowDialog = {cardViewModel.showEditCommentDialog = null},
+                commentToEdit = cardViewModel.showEditCommentDialog!!
+            )
+        }
+
         val isLoading = cardViewModel.isLoading
         if(isLoading) MyProgressBar()
     }
@@ -724,16 +742,16 @@ fun CommentItem(
     Column (modifier = Modifier
         .fillMaxWidth()
         .padding(
-            start = if (isAuthorCurrentUser) 20.dp else 50.dp,
-            end = if (isAuthorCurrentUser) 50.dp else 20.dp
+            start = if (isAuthorCurrentUser) 50.dp else 20.dp,
+            end = if (isAuthorCurrentUser) 20.dp else 50.dp
         )
         .background(
-            color = colorResource(id = R.color.menu_background),
+            color = colorResource(id = if(isAuthorCurrentUser) R.color.comment_author_background else R.color.comment_background) ,
             shape = RoundedCornerShape(
                 topStart = 30.dp,
                 topEnd = 30.dp,
-                bottomStart = if (isAuthorCurrentUser) 0.dp else 30.dp,
-                bottomEnd = if (isAuthorCurrentUser) 30.dp else 0.dp
+                bottomStart = if (isAuthorCurrentUser) 30.dp else 0.dp,
+                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30.dp
             )
         )) {
         Row (
@@ -773,14 +791,16 @@ fun CommentItem(
                     fontSize = 16.sp
                 )
             }
-            IconButton(
-                onClick = { cardViewModel.showCommentOptionsDialog = true }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = null,
-                    tint = colorResource(id = R.color.title)
-                )
+            if(isAuthorCurrentUser) {
+                IconButton(
+                    onClick = { cardViewModel.showCommentOptionsDialog = comment }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = null,
+                        tint = colorResource(id = R.color.title)
+                    )
+                }
             }
         }
 
