@@ -4,68 +4,68 @@
     <string name="web_client_id">954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com</string>
     <string name="shared_pref_key">simplekanban.MyBeautifulAndSecretKey</string>
 
-    <string name="sign_in_google">ENTRAR COM GOOGLE</string>
-    <string name="add_card">ADICIONAR CARTÃO</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="add_card">ADD CARD</string>
     <string name="to_do">TO DO</string>
     <string name="doing">DOING</string>
     <string name="done">DONE</string>
-    <string name="create_card">Criar Card</string>
-    <string name="save">Salvar</string>
-    <string name="update">Atualizar</string>
-    <string name="insert_title">Insira um título!</string>
-    <string name="title">Título</string>
-    <string name="description">Descrição</string>
-    <string name="delete_card">"DESEJA APAGAR ESTE CARD?"</string>
-    <string name="delete_kanban">"DESEJA APAGAR ESTE KANBAN"</string>
-    <string name="delete">APAGAR</string>
-    <string name="cancel">CANCELAR</string>
-    <string name="card_moved">CARD MOVIDO PARA:</string>
-    <string name="move_to">Mover para:</string>
-    <string name="card_selected">"CARD SELECIONADO"</string>
+    <string name="create_card">Create Card</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="insert_title">Insert a title!</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="delete_card">"DO YOU WANT TO DELETE THIS CARD?"</string>
+    <string name="delete_kanban">"DO YOU WANT TO DELETE THIS KANBAN"</string>
+    <string name="delete">DELETE</string>
+    <string name="cancel">CANCEL</string>
+    <string name="card_moved">CARD MOVED TO:</string>
+    <string name="move_to">Move to:</string>
+    <string name="card_selected">"CARD SELECTED"</string>
     <string name="select_account">Selecione sua conta aqui. \n
 Ao entrar, você concorda com nossa política de privacidade.</string>
 
-    <string name="create_column">"Criar Coluna"</string>
-    <string name="manage_columns">"Gerenciar Colunas"</string>
-    <string name="share">"Compartilhar"</string>
-    <string name="alternate_kanban">"Alternar Kanban"</string>
-    <string name="my_profile">"Meu Perfil"</string>
-    <string name="change_kanban_name">"Editar Nome"</string>
-    <string name="edit_comment">"Editar Comentário"</string>
-    <string name="comment">"Comentário"</string>
+    <string name="create_column">"Create Column"</string>
+    <string name="manage_columns">"Manage Columns"</string>
+    <string name="share">"Share"</string>
+    <string name="alternate_kanban">"Toggle Kanban"</string>
+    <string name="my_profile">"My Profile"</string>
+    <string name="change_kanban_name">"Edit Name"</string>
+    <string name="edit_comment">"Edit Comment"</string>
+    <string name="comment">"Comment"</string>
 
-    <string name="columns">"Colunas"</string>
-    <string name="add_column">ADICIONAR COLUNA</string>
-    <string name="create_kanban">Criar Kanban</string>
-    <string name="name">Nome</string>
+    <string name="columns">"Columns"</string>
+    <string name="add_column">ADD COLUMN</string>
+    <string name="create_kanban">Create Kanban</string>
+    <string name="name">Name</string>
     <string name="email">Email</string>
-    <string name="search_user">Buscar Usuário</string>
-    <string name="invalid_email">Email Inválido</string>
-    <string name="user_founded">Usuario Encontrado</string>
-    <string name="kanban_members">Membros do Quadro</string>
-    <string name="user_added">Usuário Adicionado!</string>
-    <string name="user_not_found">Usuário não encontrado!</string>
-    <string name="my_kanbans">Meus Kanbans</string>
-    <string name="shared_with_me">Compartilhados Comigo</string>
+    <string name="search_user">Search User</string>
+    <string name="invalid_email">Invalid Email</string>
+    <string name="user_founded">User Founded</string>
+    <string name="kanban_members">Kanban Members</string>
+    <string name="user_added">User Invited!</string>
+    <string name="user_not_found">User not found!</string>
+    <string name="my_kanbans">My Kanbans</string>
+    <string name="shared_with_me">Shared With Me</string>
 
-    <string name="delete_account">Apagar Conta</string>
-    <string name="delete_account_confirm">Você tem certeza que deseja apagar sua conta?</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="delete_account_confirm">Are you sure you want to delete your account?</string>
 
-    <string name="responsible">Responsável:</string>
-    <string name="creator">Relator:</string>
-    <string name="not_assigned">Nao Atribuído</string>
-    <string name="start_date">Data de Início:</string>
-    <string name="end_date">Data de Fim:</string>
-    <string name="select">Selecionar</string>
-    <string name="comments">Comentários</string>
-    <string name="write_comment">Escrever comentário</string>
+    <string name="responsible">Responsible:</string>
+    <string name="creator">Author:</string>
+    <string name="not_assigned">Not Assigned</string>
 
-    <string name="high_priority">Prioridade Alta</string>
-    <string name="medium_priority">Prioridade Media</string>
-    <string name="low_priority">Prioridade Baixa</string>
-    <string name="select_priority">Selecionar Prioridade</string>
-    <string name="create_checklist">Criar Checklist</string>
+    <string name="start_date">Start Date:</string>
+    <string name="end_date">End Date:</string>
+    <string name="select">Select</string>
+    <string name="comments">Comments</string>
+    <string name="write_comment">Write Comment</string>
 
+    <string name="high_priority">High Priority</string>
+    <string name="medium_priority">Medium Priority</string>
+    <string name="low_priority">Low Priority</string>
+    <string name="select_priority">Select Priority</string>
+    <string name="create_checklist">Create Checklist</string>
 
-
+    <string name="checklist">Checklist</string>
 </resources>

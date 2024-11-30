@@ -1,5 +1,9 @@
 package com.sg.simplekanban.domain
 
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.sg.simplekanban.data.constants.Constants
+import com.sg.simplekanban.data.constants.Constants.Companion.CHECKLIST
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.repository.CardRepository
 import javax.inject.Inject
@@ -26,6 +30,10 @@ class CardUseCase @Inject constructor(
 
     fun updateCardColumnId(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         cardRepository.updateCardColumnId(userId, kanbanId, card, onError, onSuccess)
+    }
+
+    fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+        cardRepository.updateCardChecklist(userId, kanbanId, card, onError, onSuccess)
     }
 
 }

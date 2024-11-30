@@ -18,4 +18,6 @@ data class Card (
     var priority : Int = 0,
     val ownerId : String? = null,
     var responsibleId : String? = null,
+    var checklist: HashMap<String, HashMap<String, Boolean>>? = hashMapOf()
+
 )  : Parcelable

@@ -381,4 +381,36 @@ class CardViewModel @Inject constructor(
         }
     }
 
+    fun updateChecklist(card: Card, onFinish: () -> Unit) = viewModelScope.launch{
+        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+        val currentKanban = KanbanInMemory.currentKanban
+        val cardId = CardInMemory.card?.documentId
+
+        if(currentKanbanUserId != null
+            && currentKanban != null
+            && currentKanban.documentId != null
+            && currentKanban.shared
+            && cardId != null){
+
+            isLoading = true
+
+            cardUseCase.updateCardChecklist(
+                currentKanbanUserId,
+                kanbanId = currentKanban.documentId!!,
+                card = card,
+                onError = {
+                    isLoading = false
+                    onFinish()
+                },
+                onSuccess = {
+                    isLoading = false
+                    onFinish()
+                    addNewCommentInList(comment)
+                }
+            )
+        } else {
+            onFinish()
+        }
+    }
+
 }

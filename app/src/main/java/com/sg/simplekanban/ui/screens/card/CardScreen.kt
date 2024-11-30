@@ -294,7 +294,7 @@ fun CardScreen (
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
                                     Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
-                                    Text(text = stringResource(id = R.string.create_checklist).uppercase(), fontSize = 12.sp, color = Color.White)
+                                    Text(text = stringResource(id = R.string.checklist).uppercase(), fontSize = 12.sp, color = Color.White)
                                 }
 
                             }
@@ -528,10 +528,6 @@ fun CardScreen (
                 }
             }
         }
-
-
-
-
 
         if(!isCreatingCard){
             val showDeleteCardDialog = cardViewModel.showDeleteCardDialog

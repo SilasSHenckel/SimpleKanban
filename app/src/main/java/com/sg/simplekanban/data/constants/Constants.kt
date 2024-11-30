@@ -26,6 +26,7 @@ class Constants {
 
         //Card
         const val COLUMN_ID = "columnId"
+        const val CHECKLIST = "checklist"
 
         //Column
         const val PRIORITY = "priority"

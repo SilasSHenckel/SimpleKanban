@@ -7,6 +7,7 @@ import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
+import com.sg.simplekanban.data.constants.Constants.Companion.CHECKLIST
 import com.sg.simplekanban.data.constants.Constants.Companion.COLUMN_ID
 import com.sg.simplekanban.data.constants.Constants.Companion.PRIORITY
 import com.sg.simplekanban.data.model.Card
@@ -83,6 +84,19 @@ class CardRepository @Inject constructor(
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
             .collection(Constants.TABLE_CARD).document(card.documentId!!).update(COLUMN_ID, card.columnId)
+            .addOnFailureListener { error ->
+                onError(error)
+            }
+            .addOnSuccessListener {
+                onSuccess()
+            }
+    }
+
+    fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+        Firebase.firestore
+            .collection(Constants.TABLE_USER).document(userId)
+            .collection(Constants.TABLE_KANBAN).document(kanbanId)
+            .collection(Constants.TABLE_CARD).document(card.documentId!!).update(CHECKLIST, card.checklist)
             .addOnFailureListener { error ->
                 onError(error)
             }

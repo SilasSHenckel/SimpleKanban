@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">Simple Kanban</string>
+
+    <string name="web_client_id">954328466328-7o297l1sh2o7u9pj4nljc23hdev9q7ti.apps.googleusercontent.com</string>
+    <string name="shared_pref_key">simplekanban.MyBeautifulAndSecretKey</string>
+
+    <string name="sign_in_google">ENTRAR COM GOOGLE</string>
+    <string name="add_card">ADICIONAR CARTÃO</string>
+    <string name="to_do">TO DO</string>
+    <string name="doing">DOING</string>
+    <string name="done">DONE</string>
+    <string name="create_card">Criar Card</string>
+    <string name="save">Salvar</string>
+    <string name="update">Atualizar</string>
+    <string name="insert_title">Insira um título!</string>
+    <string name="title">Título</string>
+    <string name="description">Descrição</string>
+    <string name="delete_card">"DESEJA APAGAR ESTE CARD?"</string>
+    <string name="delete_kanban">"DESEJA APAGAR ESTE KANBAN"</string>
+    <string name="delete">APAGAR</string>
+    <string name="cancel">CANCELAR</string>
+    <string name="card_moved">CARD MOVIDO PARA:</string>
+    <string name="move_to">Mover para:</string>
+    <string name="card_selected">"CARD SELECIONADO"</string>
+    <string name="select_account">Selecione sua conta aqui. \n
+Ao entrar, você concorda com nossa política de privacidade.</string>
+
+    <string name="create_column">"Criar Coluna"</string>
+    <string name="manage_columns">"Gerenciar Colunas"</string>
+    <string name="share">"Compartilhar"</string>
+    <string name="alternate_kanban">"Alternar Kanban"</string>
+    <string name="my_profile">"Meu Perfil"</string>
+    <string name="change_kanban_name">"Editar Nome"</string>
+    <string name="edit_comment">"Editar Comentário"</string>
+    <string name="comment">"Comentário"</string>
+
+    <string name="columns">"Colunas"</string>
+    <string name="add_column">ADICIONAR COLUNA</string>
+    <string name="create_kanban">Criar Kanban</string>
+    <string name="name">Nome</string>
+    <string name="email">Email</string>
+    <string name="search_user">Buscar Usuário</string>
+    <string name="invalid_email">Email Inválido</string>
+    <string name="user_founded">Usuario Encontrado</string>
+    <string name="kanban_members">Membros do Quadro</string>
+    <string name="user_added">Usuário Adicionado!</string>
+    <string name="user_not_found">Usuário não encontrado!</string>
+    <string name="my_kanbans">Meus Kanbans</string>
+    <string name="shared_with_me">Compartilhados Comigo</string>
+
+    <string name="delete_account">Apagar Conta</string>
+    <string name="delete_account_confirm">Você tem certeza que deseja apagar sua conta?</string>
+
+    <string name="responsible">Responsável:</string>
+    <string name="creator">Relator:</string>
+    <string name="not_assigned">Nao Atribuído</string>
+    <string name="start_date">Data de Início:</string>
+    <string name="end_date">Data de Fim:</string>
+    <string name="select">Selecionar</string>
+    <string name="comments">Comentários</string>
+    <string name="write_comment">Escrever comentário</string>
+
+    <string name="high_priority">Prioridade Alta</string>
+    <string name="medium_priority">Prioridade Media</string>
+    <string name="low_priority">Prioridade Baixa</string>
+    <string name="select_priority">Selecionar Prioridade</string>
+    <string name="create_checklist">Criar Checklist</string>
+
+    <string name="checklist">Checklist</string>
+
+
+
+</resources>
