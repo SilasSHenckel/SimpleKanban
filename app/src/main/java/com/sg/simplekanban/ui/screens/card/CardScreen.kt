@@ -751,7 +751,7 @@ fun CommentItem(
                 topStart = 30.dp,
                 topEnd = 30.dp,
                 bottomStart = if (isAuthorCurrentUser) 30.dp else 0.dp,
-                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30.dp
+                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30 .dp
             )
         )) {
         Row (
