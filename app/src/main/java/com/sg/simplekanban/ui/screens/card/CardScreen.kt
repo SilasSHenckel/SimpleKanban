@@ -71,6 +71,7 @@ import com.sg.simplekanban.data.inMemory.CardInMemory
 import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Comment
+import com.sg.simplekanban.ui.components.ChecklistDialog
 import com.sg.simplekanban.ui.components.CommentOptionsDialog
 import com.sg.simplekanban.ui.components.DateAndTimePickerDialog
 import com.sg.simplekanban.ui.components.EditCommentDialog
@@ -282,7 +283,7 @@ fun CardScreen (
                                 contentPadding = PaddingValues(5.dp),
 
                                 onClick = {
-                                    cardViewModel.showSelectPriorityDialog = true
+                                    cardViewModel.showChecklistDialog = true
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                             ) {
@@ -569,6 +570,14 @@ fun CardScreen (
             )
         }
 
+        if(cardViewModel.showChecklistDialog){
+            ChecklistDialog(
+                cardViewModel = cardViewModel,
+                setShowDialog = {cardViewModel.showChecklistDialog = false},
+                card = card
+            )
+        }
+
         if(cardViewModel.showSelectStartDateDialog){
             DateAndTimePickerDialog(
                 onConfirm = { date ->
@@ -742,12 +751,12 @@ fun CommentItem(
             end = if (isAuthorCurrentUser) 20.dp else 50.dp
         )
         .background(
-            color = colorResource(id = if(isAuthorCurrentUser) R.color.comment_author_background else R.color.comment_background) ,
+            color = colorResource(id = if (isAuthorCurrentUser) R.color.comment_author_background else R.color.comment_background),
             shape = RoundedCornerShape(
                 topStart = 30.dp,
                 topEnd = 30.dp,
                 bottomStart = if (isAuthorCurrentUser) 30.dp else 0.dp,
-                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30 .dp
+                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30.dp
             )
         )) {
         Row (

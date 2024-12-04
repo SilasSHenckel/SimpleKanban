@@ -1,7 +1,5 @@
 package com.sg.simplekanban.ui.components
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,16 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -41,22 +31,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.model.Card
-import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.ui.screens.card.CardViewModel
 
 @Composable
 fun ChecklistDialog (
     cardViewModel: CardViewModel,
     setShowDialog: (Boolean) -> Unit,
-    card : Card,
+    card : Card?,
 ) {
 
-    val checklist = card.checklist ?: hashMapOf()
+    val checklist = card?.checklist ?: (cardViewModel.checklistTemp ?: hashMapOf())
     val context = LocalContext.current
 
     Dialog(
@@ -94,9 +81,8 @@ fun ChecklistDialog (
                         if(newText.text.length < 100) newItem = newText
                         if(showSaveItemButton && newText.text.isEmpty()) showSaveItemButton = false
                     },
-                    placeholderText = stringResource(id = R.string.write_comment),
-                    width = configuration.screenWidthDp.dp - 23.dp,
-                    paddingStart = 23.dp,
+                    placeholderText = stringResource(id = R.string.add_an_item),
+                    width = configuration.screenWidthDp.dp,
                     showSendButton = showSaveItemButton,
                     onSendClicked = {
                         if(newItem.text.isNotEmpty()) {
@@ -106,15 +92,20 @@ fun ChecklistDialog (
 
                             checklist[DateUtil.getCurrentDateFormated()] = mapItem
 
-                            card.checklist = checklist
+                            card?.checklist = checklist
 
-                            cardViewModel.updateChecklist(card = card,
-                                onFinish =  {
-                                    newItem = TextFieldValue("")
-                                }
-                            )
+                            if(card != null) {
+                                cardViewModel.updateChecklist(card = card,
+                                    onFinish = {
+                                        newItem = TextFieldValue("")
+                                    }
+                                )
+                            } else {
+                                cardViewModel.checklistTemp = checklist
+                            }
                         }
 
+                        showSaveItemButton = false
                         keyboardController?.hide()
                     }
                 )
@@ -122,15 +113,11 @@ fun ChecklistDialog (
                 Spacer(modifier = Modifier.height(30.dp))
 
                 if(checklist.isNotEmpty()){
-                    LazyColumn {
+                    LazyColumn (
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
                         itemsIndexed(checklist.toList()){ index, item ->
-                            Row (modifier = Modifier.padding(start = 5.dp, end = 5.dp , bottom = 12.dp)) {
-                                ChecklistItem(card = card, item = item, cardViewModel = cardViewModel)
-                            }
-                        }
-
-                        item{
-                            Spacer(modifier = Modifier.height(20.dp))
+                            ChecklistItem(card = card, item = item, cardViewModel = cardViewModel)
                         }
                     }
                 }
@@ -142,21 +129,18 @@ fun ChecklistDialog (
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ChecklistItem(
-    card: Card,
+    card: Card?,
     item: Pair<String, HashMap<String, Boolean>>,
     cardViewModel: CardViewModel
 ){
     Column (
         modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 20.dp,)
     ) {
         Row (
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 20.dp, end = 5.dp, bottom = 10.dp, top = 10.dp)
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ){
 
             var text : String? = null
@@ -175,13 +159,16 @@ fun ChecklistItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text ?: ""
-                )
+
                 Checkbox(
                     checked = checked,
                     onCheckedChange = { checked = it }
                 )
+
+                Text(
+                    text ?: ""
+                )
+
             }
 
 //            IconButton(

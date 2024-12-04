@@ -36,6 +36,7 @@ class CardViewModel @Inject constructor(
     var showDeleteCardDialog by mutableStateOf(false)
     var showSelectResponsibleDialog by mutableStateOf(false)
     var showSelectPriorityDialog by mutableStateOf(false)
+    var showChecklistDialog by mutableStateOf(false)
     var showCommentOptionsDialog by mutableStateOf<Comment?>(null)
     var showEditCommentDialog by mutableStateOf<Comment?>(null)
 
@@ -51,6 +52,8 @@ class CardViewModel @Inject constructor(
     var priority by mutableStateOf<Priority?>(null)
 
     var comments by mutableStateOf<List<Comment>>(listOf())
+
+    var checklistTemp : HashMap<String, HashMap<String, Boolean>>? = null
 
     var priorities = listOf(
         Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
@@ -102,6 +105,11 @@ class CardViewModel @Inject constructor(
                 ownerId = ownerId,
                 responsibleId = null
             )
+
+            if(checklistTemp != null){
+                card.checklist = checklistTemp
+            }
+
             cardUseCase.save(
                 userId = currentKanbanUserId,
                 kanbanId = currentKanbanId,
@@ -405,7 +413,7 @@ class CardViewModel @Inject constructor(
                 onSuccess = {
                     isLoading = false
                     onFinish()
-                    addNewCommentInList(comment)
+//                    addNewCommentInList(comment)
                 }
             )
         } else {
