@@ -47,7 +47,18 @@ fun ChecklistDialog (
     val context = LocalContext.current
 
     Dialog(
-        onDismissRequest = { setShowDialog(false) }
+        onDismissRequest = {
+            if(cardViewModel.isChecklistItemChanged && card != null){
+                cardViewModel.updateChecklist(card = card,
+                    onFinish = {
+                        setShowDialog(false)
+                    }
+                )
+                cardViewModel.isChecklistItemChanged = false
+            } else {
+                setShowDialog(false)
+            }
+        }
     ) {
 
         Surface(
@@ -100,6 +111,7 @@ fun ChecklistDialog (
                                         newItem = TextFieldValue("")
                                     }
                                 )
+                                cardViewModel.isChecklistItemChanged = false
                             } else {
                                 cardViewModel.checklistTemp = checklist
                             }
@@ -154,15 +166,29 @@ fun ChecklistItem(
 
             var checked by remember { mutableStateOf(checkedValue) }
 
-//            card.checklist[item.first] = hashMapOf()
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
 
                 Checkbox(
                     checked = checked,
-                    onCheckedChange = { checked = it }
+                    onCheckedChange = {
+                        checked = it
+
+                        if(card == null && text != null && cardViewModel.checklistTemp != null){
+                            val newHashMap : HashMap<String, Boolean> = hashMapOf()
+                            newHashMap[text] = checked
+                            cardViewModel.checklistTemp!![item.first] = newHashMap
+                        }
+
+                        if(card != null && text != null){
+                            val newHashMap : HashMap<String, Boolean> = hashMapOf()
+                            newHashMap[text] = checked
+                            card.checklist!![item.first] = newHashMap
+                        }
+
+                        cardViewModel.isChecklistItemChanged = true
+                    }
                 )
 
                 Text(

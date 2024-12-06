@@ -55,6 +55,8 @@ class CardViewModel @Inject constructor(
 
     var checklistTemp : HashMap<String, HashMap<String, Boolean>>? = null
 
+    var isChecklistItemChanged = false
+
     var priorities = listOf(
         Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
         Priority(1, context.getString(R.string.low_priority), "#73FF88", "#0BA923"),
