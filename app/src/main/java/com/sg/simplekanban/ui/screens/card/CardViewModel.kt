@@ -415,12 +415,22 @@ class CardViewModel @Inject constructor(
                 onSuccess = {
                     isLoading = false
                     onFinish()
-//                    addNewCommentInList(comment)
                 }
             )
         } else {
             onFinish()
         }
+    }
+
+    fun deleteChecklistItem(card: Card?, key: String) = viewModelScope.launch{
+        isLoading = true
+        if(card != null) {
+            card.checklist?.remove(key)
+        } else {
+            checklistTemp?.remove(key)
+        }
+        isChecklistItemChanged = true
+        isLoading = false
     }
 
 }

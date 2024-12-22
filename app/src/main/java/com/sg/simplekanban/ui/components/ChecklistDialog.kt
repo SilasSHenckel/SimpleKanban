@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -143,7 +147,7 @@ fun ChecklistDialog (
 fun ChecklistItem(
     card: Card?,
     item: Pair<String, HashMap<String, Boolean>>,
-    cardViewModel: CardViewModel
+    cardViewModel: CardViewModel,
 ){
     Column (
         modifier = Modifier
@@ -197,15 +201,17 @@ fun ChecklistItem(
 
             }
 
-//            IconButton(
-//                onClick = { cardViewModel.showCommentOptionsDialog = comment }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.MoreVert,
-//                    contentDescription = null,
-//                    tint = colorResource(id = R.color.title)
-//                )
-//            }
+            IconButton(
+                onClick = {
+                    cardViewModel.deleteChecklistItem(card, item.first)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Delete,
+                    contentDescription = null,
+                    tint = colorResource(id = R.color.title)
+                )
+            }
         }
     }
 }

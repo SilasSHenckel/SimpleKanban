@@ -295,7 +295,7 @@ fun CardScreen (
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
                                     Image(painter = painterResource(id = R.drawable.check), contentDescription = "finuto minal", Modifier.size(15.dp))
-                                    Text(text = stringResource(id = R.string.checklist).uppercase(), fontSize = 12.sp, color = Color.White)
+                                    Text(text = stringResource(id = if(card?.checklist.isNullOrEmpty() && cardViewModel.checklistTemp.isNullOrEmpty()) R.string.create_checklist else R.string.see_checklist).uppercase(), fontSize = 12.sp, color = Color.White)
                                 }
 
                             }
