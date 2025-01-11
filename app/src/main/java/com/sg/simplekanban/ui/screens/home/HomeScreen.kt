@@ -120,8 +120,6 @@ fun HomeScreen(
                 nav = nav,
                 columnId = selectedColumnId,
                 homeViewModel = homeViewModel,
-                columns = columns,
-                isShowingDialog = isShowingDialog
             )
         }
 
@@ -155,6 +153,19 @@ fun HomeScreen(
                     listSize = columns.size
                 )
             }
+        }
+
+        if (isShowingDialog && CardInMemory.card != null){
+            val moveColumns = mutableListOf<Column>()
+            for(column in columns){
+                if(column.documentId != CardInMemory.card!!.columnId) moveColumns.add(column)
+            }
+            MoveCardDialog(
+                card = CardInMemory.card!!,
+                columns = moveColumns,
+                homeViewModel = homeViewModel,
+                setShowDialog = { homeViewModel.showMoveCardDialog = it }
+            )
         }
 
         if(homeViewModel.showOptionsDialog){
@@ -276,8 +287,6 @@ fun MyBody(
     columnId: String,
     homeViewModel: HomeViewModel,
     nav: NavHostController,
-    columns: List<Column>,
-    isShowingDialog: Boolean
 ){
 
     val cardList = CardInMemory.cards
@@ -302,7 +311,7 @@ fun MyBody(
             }
 
             itemsIndexed(cardList) { index: Int, card: Card ->
-                MyListItem(card = card, nav, homeViewModel, columns, isShowingDialog, kanbanMembers)
+                MyListItem(card = card, nav, homeViewModel, kanbanMembers)
             }
         }
     }
@@ -354,24 +363,8 @@ fun MyListItem(
     card: Card,
     nav: NavHostController,
     homeViewModel: HomeViewModel,
-    columns: List<Column>,
-    isShowingDialog: Boolean,
     kanbanMembers: List<User>
 ){
-
-    if (isShowingDialog){
-        val moveColumns = mutableListOf<Column>()
-        for(column in columns){
-            if(column.documentId != card.columnId) moveColumns.add(column)
-        }
-        MoveCardDialog(
-            card = card,
-            columns = moveColumns,
-            homeViewModel = homeViewModel,
-            setShowDialog = { homeViewModel.showMoveCardDialog = it }
-        )
-    }
-
     Box (
         modifier = Modifier
             .fillMaxWidth()
@@ -386,6 +379,7 @@ fun MyListItem(
                     nav.navigate(AppScreen.Card.name + "/" + card.columnId)
                 },
                 onLongClick = {
+                    CardInMemory.card = card
                     homeViewModel.showMoveCardDialog = true
                 },
             )
