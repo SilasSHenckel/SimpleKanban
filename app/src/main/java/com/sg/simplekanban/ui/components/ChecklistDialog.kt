@@ -117,6 +117,7 @@ fun ChecklistDialog (
                                 )
                                 cardViewModel.isChecklistItemChanged = false
                             } else {
+                                newItem = TextFieldValue("")
                                 cardViewModel.checklistTemp = checklist
                             }
                         }

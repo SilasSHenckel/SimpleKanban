@@ -108,6 +108,8 @@ class KanbanViewModel @Inject constructor(
             verifyUsers(kanban)
 
             getColumns(kanbanUserId, kanban, nav)
+        } else {
+            nav.popBackStack()
         }
     }
 

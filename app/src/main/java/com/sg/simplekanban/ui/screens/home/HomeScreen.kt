@@ -1,6 +1,7 @@
 package com.sg.simplekanban.ui.screens.home
 
 
+import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -388,7 +389,12 @@ fun MyListItem(
         Text(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(top = 20.dp, start = 20.dp, bottom = 25.dp, end = if(kanbanMembers.isNotEmpty() && card.responsibleId != null) 60.dp else 20.dp),
+                .padding(
+                    top = 20.dp,
+                    start = 20.dp,
+                    bottom = 25.dp,
+                    end = if (kanbanMembers.isNotEmpty() && card.responsibleId != null) 60.dp else 20.dp
+                ),
             text = card.title ?: "",
             color = colorResource(id = R.color.title),
             fontWeight = FontWeight.Normal,
@@ -419,7 +425,9 @@ fun MyListItem(
             if(responsible?.photoUrl == null){
                 val name = responsible?.name
                 if(name != null){
-                    Box(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp)){
+                    Box(modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 20.dp)){
                         Icon(
                             imageVector = Icons.Rounded.Circle,
                             contentDescription = "circle",
@@ -438,7 +446,9 @@ fun MyListItem(
                     }
                 }
             } else {
-                Row (modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp)) {
+                Row (modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 20.dp)) {
                     GlideImage(
                         model = responsible.photoUrl,
                         contentDescription = "user",
@@ -468,6 +478,15 @@ val priorityWidth = hashMapOf(
     Pair(3, 35.dp),
 )
 
+@Composable
+fun isTablet(): Boolean {
+    val configuration = LocalConfiguration.current
+    return if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        configuration.screenWidthDp > 840
+    } else {
+        configuration.screenWidthDp > 600
+    }
+}
 
 @Composable
 fun MyTab(
@@ -481,7 +500,7 @@ fun MyTab(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
 
-    var widthSpaceRequired = if(listSize > 3) 20.dp else 0.dp
+    var widthSpaceRequired = if(listSize > 3) (if(isTablet()) 30.dp else 20.dp) else 0.dp
 
     Box(
         modifier = Modifier
