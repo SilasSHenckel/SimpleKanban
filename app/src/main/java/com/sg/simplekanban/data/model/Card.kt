@@ -20,4 +20,4 @@ data class Card (
     var responsibleId : String? = null,
     var checklist: HashMap<String, HashMap<String, Boolean>>? = hashMapOf()
 
-)  : Parcelable
+) : Parcelable

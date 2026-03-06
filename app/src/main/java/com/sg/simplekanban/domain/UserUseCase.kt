@@ -1,9 +1,7 @@
 package com.sg.simplekanban.domain
 
-import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.data.repository.UserRepository
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UserUseCase @Inject constructor(

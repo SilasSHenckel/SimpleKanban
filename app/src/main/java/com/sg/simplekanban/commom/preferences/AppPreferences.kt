@@ -55,12 +55,11 @@ class AppPreferences(context: Context) {
     }
 
     private fun clearPreferences(fileID: String?) {
-        val editor = sPreferences!!.edit().remove(fileID)
-        editor.apply()
+        sPreferences?.edit()?.remove(fileID)?.apply()
     }
 
     fun clearPreferences() {
-        val editor = sPreferences!!.edit()
+        val editor = sPreferences?.edit() ?: return
         editor.clear()
         editor.apply()
     }

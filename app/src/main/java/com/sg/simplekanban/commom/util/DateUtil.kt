@@ -12,7 +12,6 @@ import java.util.Locale
 
 class DateUtil {
 
-
     companion object{
 
         fun getDateFormated(calendar: Calendar, format: String = "yyyy/MM/dd-HH:mm:ss") : String {

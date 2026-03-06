@@ -12,8 +12,10 @@ import com.sg.simplekanban.data.model.TableHistory
     version = 1
 )
 abstract class RoomAppDatabase : RoomDatabase (){
+
     companion object {
         const val DATABASE_NAME = "simple_kanban.db"
     }
+
     abstract fun tableHistoryDao() : TableHistoryDao
 }

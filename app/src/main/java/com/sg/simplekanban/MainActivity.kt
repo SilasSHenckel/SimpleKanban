@@ -11,8 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
-import com.sg.simplekanban.ui.routes.NavigationHost
-import com.sg.simplekanban.ui.theme.SimpleKanbanTheme
+import com.sg.simplekanban.presentation.navigation.NavigationHost
+import com.sg.simplekanban.presentation.theme.SimpleKanbanTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

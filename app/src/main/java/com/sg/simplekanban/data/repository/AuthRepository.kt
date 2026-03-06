@@ -6,18 +6,13 @@ import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FieldValue.serverTimestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
-import com.sg.simplekanban.data.constants.Constants.Companion.CREATED_AT
-import com.sg.simplekanban.data.constants.Constants.Companion.EMAIL
-import com.sg.simplekanban.data.constants.Constants.Companion.NAME
-import com.sg.simplekanban.data.constants.Constants.Companion.PHOTO_URL
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_IN_REQUEST
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_UP_REQUEST
 import com.sg.simplekanban.data.constants.Constants.Companion.TABLE_USER
+import com.sg.simplekanban.data.mapper.toUser
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.response.Response
@@ -39,7 +34,7 @@ class AuthRepository @Inject constructor(
     private val db: FirebaseFirestore
 ) {
 
-     val isUserAuthenticatedInFirebase = auth.currentUser != null
+    fun isUserAuthenticatedInFirebase() = auth.currentUser != null
 
      suspend fun oneTapSignInWithGoogle(): OneTapSignInResponse {
         return try {
@@ -55,9 +50,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun firebaseSignInWithGoogle(
-        googleCredential: AuthCredential
-    ): SignInWithGoogleResponse {
+    suspend fun firebaseSignInWithGoogle(googleCredential: AuthCredential): SignInWithGoogleResponse {
         return try {
             val authResult = auth.signInWithCredential(googleCredential).await()
             val isNewUser = authResult.additionalUserInfo?.isNewUser ?: false
@@ -67,17 +60,6 @@ class AuthRepository @Inject constructor(
             Response.Success(true)
         } catch (e: Exception) {
             Response.Failure(e)
-        }
-    }
-
-    private suspend fun addUserToFirestore() {
-        auth.currentUser?.apply {
-            val user = toUser()
-            db.collection(TABLE_USER).document(uid).set(user).await()
-            val response = db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).add(Kanban(name = "Kanban 1", shared = false, creationDate = DateUtil.getCurrentDateFormated())).await()
-            db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "TO DO", priority = 0)).await()
-            db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DOING", priority = 1)).await()
-            db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DONE", priority = 2)).await()
         }
     }
 
@@ -91,17 +73,10 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    fun FirebaseUser.toUser() = mapOf(
-        NAME to displayName,
-        EMAIL to email,
-        PHOTO_URL to photoUrl?.toString(),
-        CREATED_AT to serverTimestamp()
-    )
-
     suspend fun deleteAccount(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
         return try {
             auth.currentUser?.apply {
-                db.collection(Constants.TABLE_USER).document(uid).delete().await()
+                db.collection(TABLE_USER).document(uid).delete().await()
                 signInClient.revokeAccess().await()
                 oneTapClient.signOut().await()
                 delete().await()
@@ -112,4 +87,18 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    private suspend fun addUserToFirestore() {
+        auth.currentUser?.apply {
+            val user = toUser()
+            db.collection(TABLE_USER).document(uid).set(user).await()
+            createFirstLoginData(uid)
+        }
+    }
+
+    private suspend fun createFirstLoginData(uid: String){
+        val response = db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).add(Kanban(name = "Kanban 1", shared = false, creationDate = DateUtil.getCurrentDateFormated())).await()
+        db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "TO DO", priority = 0)).await()
+        db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DOING", priority = 1)).await()
+        db.collection(TABLE_USER).document(uid).collection(Constants.TABLE_KANBAN).document(response.id).collection(Constants.TABLE_COLUMN).add(Column(name = "DONE", priority = 2)).await()
+    }
 }
