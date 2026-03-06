@@ -12,3 +12,9 @@ In this project, I was able to put into practice my knowledge of some of the mos
   <img src="screenshots/img3.png" width="200"/>
   <img src="screenshots/img4.png" width="200"/>
 </p>
+
+## Download
+
+Download the app on Google Play:
+
+https://play.google.com/store/apps/details?id=com.sg.simplekanban&hl=pt_BR
