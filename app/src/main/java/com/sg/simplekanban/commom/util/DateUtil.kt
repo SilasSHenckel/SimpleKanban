@@ -5,7 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import com.google.firebase.firestore.Source
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

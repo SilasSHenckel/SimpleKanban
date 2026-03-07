@@ -8,15 +8,16 @@ import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.data.model.TableHistory
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.repository.CommentRepository
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import javax.inject.Inject
 
-class CommentRepository @Inject constructor(
+class CommentRepositoryImpl @Inject constructor(
     private val tableHistoryUseCase: TableHistoryUseCase,
     private val context: Context
-){
+) : CommentRepository {
 
-    fun save(userId: String, kanbanId: String, cardId: String, comment: Comment, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(userId: String, kanbanId: String, cardId: String, comment: Comment, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -30,7 +31,7 @@ class CommentRepository @Inject constructor(
             }
     }
 
-    fun getCommentsByCard(userId: String, kanbanId: String, cardId: String, onError: (Throwable) -> Unit, onSuccess: (List<Comment>) -> Unit){
+    override fun getCommentsByCard(userId: String, kanbanId: String, cardId: String, onError: (Throwable) -> Unit, onSuccess: (List<Comment>) -> Unit){
 
         val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN + "/" + kanbanId + "/" + Constants.TABLE_CARD + "/" + cardId + "/" + Constants.TABLE_COMMENT
 
@@ -51,7 +52,7 @@ class CommentRepository @Inject constructor(
             }
     }
 
-    fun delete(userId: String, kanbanId: String, cardId: String, commentId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, kanbanId: String, cardId: String, commentId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -65,7 +66,7 @@ class CommentRepository @Inject constructor(
             }
     }
 
-    fun update(userId: String, kanbanId: String, cardId: String, comment: Comment, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(userId: String, kanbanId: String, cardId: String, comment: Comment, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)

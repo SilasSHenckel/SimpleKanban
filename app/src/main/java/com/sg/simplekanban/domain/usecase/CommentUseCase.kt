@@ -1,7 +1,7 @@
-package com.sg.simplekanban.domain
+package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.Comment
-import com.sg.simplekanban.data.repository.CommentRepository
+import com.sg.simplekanban.domain.repository.CommentRepository
 import javax.inject.Inject
 
 class CommentUseCase @Inject constructor(

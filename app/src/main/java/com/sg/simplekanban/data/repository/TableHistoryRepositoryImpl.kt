@@ -2,25 +2,26 @@ package com.sg.simplekanban.data.repository
 
 import com.sg.simplekanban.data.dao.TableHistoryDao
 import com.sg.simplekanban.data.model.TableHistory
+import com.sg.simplekanban.domain.repository.TableHistoryRepository
 import javax.inject.Inject
 
-class TableHistoryRepository @Inject constructor(
+class TableHistoryRepositoryImpl @Inject constructor(
     private val tableHistoryDao: TableHistoryDao
-){
+) : TableHistoryRepository {
 
-    fun save(tableHistory: TableHistory){
+    override fun save(tableHistory: TableHistory){
         tableHistoryDao.save(tableHistory)
     }
 
-    fun getByPath(path: String): List<TableHistory>{
+    override fun getByPath(path: String): List<TableHistory>{
         return tableHistoryDao.getByPath(path)
     }
 
-    fun delete(tableHistory: TableHistory){
+    override fun delete(tableHistory: TableHistory){
         tableHistoryDao.delete(tableHistory)
     }
 
-    fun update(tableHistory: TableHistory){
+    override fun update(tableHistory: TableHistory){
         tableHistoryDao.update(tableHistory)
     }
 

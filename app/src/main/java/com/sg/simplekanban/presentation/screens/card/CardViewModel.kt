@@ -1,37 +1,37 @@
 package com.sg.simplekanban.presentation.screens.card
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
-import com.sg.simplekanban.data.inMemory.CardInMemory
-import com.sg.simplekanban.data.inMemory.ColumnsInMemory
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
-import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.data.singleton.CurrentKanbanManager
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.data.model.User
-import com.sg.simplekanban.domain.CardUseCase
-import com.sg.simplekanban.domain.CommentUseCase
+import com.sg.simplekanban.data.provider.ResourceProvider
+import com.sg.simplekanban.data.singleton.CurrentCardManager
+import com.sg.simplekanban.data.singleton.CurrentColumnsManager
+import com.sg.simplekanban.data.singleton.CurrentUserManager
+import com.sg.simplekanban.domain.usecase.CardUseCase
+import com.sg.simplekanban.domain.usecase.CommentUseCase
+import com.sg.simplekanban.presentation.base.BaseViewModel
 import com.sg.simplekanban.presentation.model.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CardViewModel @Inject constructor(
     private val cardUseCase: CardUseCase,
     private val commentUseCase: CommentUseCase,
-    private val context: Context
-): ViewModel() {
-
-    var isLoading by mutableStateOf(false)
+    private val currentKanbanManager: CurrentKanbanManager,
+    private val currentUserManager: CurrentUserManager,
+    private val currentColumnsManager: CurrentColumnsManager,
+    private val currentCardManager: CurrentCardManager,
+    private val resourceProvider: ResourceProvider
+): BaseViewModel() {
 
     var showDeleteCardDialog by mutableStateOf(false)
     var showSelectResponsibleDialog by mutableStateOf(false)
@@ -58,22 +58,37 @@ class CardViewModel @Inject constructor(
     var isChecklistItemChanged = false
 
     var priorities = listOf(
-        Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
-        Priority(1, context.getString(R.string.low_priority), "#73FF88", "#0BA923"),
-        Priority(2, context.getString(R.string.medium_priority), "#FFDA73", "#E49800"),
-        Priority(3, context.getString(R.string.high_priority), "#FFA3A3", "#E83411"),
+        Priority(0, resourceProvider.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
+        Priority(1, resourceProvider.getString(R.string.low_priority), "#73FF88", "#0BA923"),
+        Priority(2, resourceProvider.getString(R.string.medium_priority), "#FFDA73", "#E49800"),
+        Priority(3, resourceProvider.getString(R.string.high_priority), "#FFA3A3", "#E83411"),
     )
 
+    val currentKanbanUserId get() = currentUserManager.currentKanbanUserId
+    val userId get() = currentUserManager.userId
+    val card get() = currentCardManager.card
+
+    val currentKanban = currentKanbanManager.currentKanban
+    val currentKanbanMembers = currentKanbanManager.kanbanMembers
+    val selectedColumnId = currentColumnsManager.selectedColumnId
+    val cards = currentCardManager.cards
+
+    fun getCurrentKanban() = currentKanban.value
+    fun getCurrentKanbanMembers() = currentKanbanMembers.value
+    fun getSelectedColumnId() = selectedColumnId.value
+    fun getCards() = cards.value
+    fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
+
     init {
-        responsible = getKanbanMember(CardInMemory.card?.responsibleId)
-        author = getKanbanMember(CardInMemory.card?.ownerId)
-        loadCardPriority(CardInMemory.card?.priority)
+        responsible = getKanbanMember(card?.responsibleId)
+        author = getKanbanMember(card?.ownerId)
+        loadCardPriority(card?.priority)
         loadCardComments()
     }
 
     private fun loadCardPriority(cardPriority: Int?){
         if(cardPriority == null ) priority =
-            Priority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E")
+            Priority(0, resourceProvider.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E")
         else {
             for (p in priorities){
                 if(p.id == cardPriority){
@@ -91,44 +106,44 @@ class CardViewModel @Inject constructor(
         priority: Int = 3,
         ownerId: String?,
         nav: NavHostController
-    ) = viewModelScope.launch {
+    ) {
+        launchWithLoading {
+            val currentKanbanUserId = currentKanbanUserId
+            val currentKanbanId = getCurrentKanban()?.documentId
 
-        isLoading = true
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
+            if(currentKanbanUserId != null && currentKanbanId != null){
+                val card = Card(
+                    title = title,
+                    description = description,
+                    columnId = columnId,
+                    creationDate = DateUtil.getCurrentDateFormated(),
+                    endDate = null,
+                    priority = priority,
+                    ownerId = ownerId,
+                    responsibleId = null
+                )
 
-        if(currentKanbanUserId != null && currentKanbanId != null){
-            val card = Card(
-                title = title,
-                description = description,
-                columnId = columnId,
-                creationDate = DateUtil.getCurrentDateFormated(),
-                endDate = null,
-                priority = priority,
-                ownerId = ownerId,
-                responsibleId = null
-            )
-
-            if(checklistTemp != null){
-                card.checklist = checklistTemp
-            }
-
-            cardUseCase.save(
-                userId = currentKanbanUserId,
-                kanbanId = currentKanbanId,
-                card = card,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = { generatedId ->
-                    isLoading = false
-
-                    card.documentId = generatedId
-
-                    addCardInList(card)
-                    nav.popBackStack()
+                if(checklistTemp != null){
+                    card.checklist = checklistTemp
                 }
-            )
+
+                cardUseCase.save(
+                    userId = currentKanbanUserId,
+                    kanbanId = currentKanbanId,
+                    card = card,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = { generatedId ->
+                        stopLoading()
+
+                        card.documentId = generatedId
+
+                        addCardInList(card)
+                        nav.popBackStack()
+                    }
+                )
+            }
         }
     }
 
@@ -136,57 +151,58 @@ class CardViewModel @Inject constructor(
         card: Card,
         setShowDialog: (Boolean) -> Unit,
         requestCloseScreen: () -> Unit
-    ) = viewModelScope.launch {
+    ) {
 
-        isLoading = true
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
+        launchWithLoading {
+            val currentKanbanUserId = currentKanbanUserId
+            val currentKanbanId = getCurrentKanban()?.documentId
 
-        if(currentKanbanUserId != null && currentKanbanId != null){
-            cardUseCase.delete(
-                userId = currentKanbanUserId,
-                kanbanId = currentKanbanId,
-                card = card,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-                    setShowDialog(false)
-                    requestCloseScreen()
-                }
-            )
+            if(currentKanbanUserId != null && currentKanbanId != null){
+                cardUseCase.delete(
+                    userId = currentKanbanUserId,
+                    kanbanId = currentKanbanId,
+                    card = card,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        setShowDialog(false)
+                        requestCloseScreen()
+                    }
+                )
+            }
         }
+
     }
 
-    fun updateCard(card: Card, nav: NavHostController) = viewModelScope.launch {
+    fun updateCard(card: Card, nav: NavHostController) {
+        launchWithLoading {
+            val currentKanbanUserId = currentKanbanUserId
+            val currentKanbanId = getCurrentKanban()?.documentId
 
-        isLoading = true
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
-
-        if(currentKanbanUserId != null && currentKanbanId != null){
-            cardUseCase.update(
-                userId = currentKanbanUserId,
-                kanbanId = currentKanbanId,
-                card = card,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-
-                    addCardInList(card)
-                    nav.popBackStack()
-                }
-            )
+            if(currentKanbanUserId != null && currentKanbanId != null){
+                cardUseCase.update(
+                    userId = currentKanbanUserId,
+                    kanbanId = currentKanbanId,
+                    card = card,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        addCardInList(card)
+                        nav.popBackStack()
+                    }
+                )
+            }
         }
     }
 
     fun addCardInList(newCard: Card?){
-        if (newCard != null && ColumnsInMemory.selectedColumnId == newCard.columnId){
+        if (newCard != null && getSelectedColumnId() == newCard.columnId){
             val newList = mutableListOf<Card>()
-            newList.addAll(CardInMemory.cards)
+            newList.addAll(getCards())
 
             val index = hasCardInList(newCard)
 
@@ -195,12 +211,12 @@ class CardViewModel @Inject constructor(
 
             newList.sortByDescending { it.priority }
 
-            CardInMemory.cards = newList
+            setCards(newList)
         }
     }
 
     fun hasCardInList(newCard: Card): Int?{
-        for((index, card) in CardInMemory.cards.withIndex()){
+        for((index, card) in getCards().withIndex()){
             if(card.documentId == newCard.documentId){
                 return index
             }
@@ -209,19 +225,19 @@ class CardViewModel @Inject constructor(
     }
 
     fun removeCardFromList(cardToRemove: Card?){
-        if (cardToRemove != null && ColumnsInMemory.selectedColumnId == cardToRemove.columnId){
+        if (cardToRemove != null && getSelectedColumnId() == cardToRemove.columnId){
             val newList = mutableListOf<Card>()
-            newList.addAll(CardInMemory.cards)
+            newList.addAll(getCards())
             newList.remove(cardToRemove)
 
-            CardInMemory.cards = newList
+            setCards(newList)
         }
     }
 
     fun getKanbanMember(memberId: String?) : User? {
         if(memberId == null) return null
 
-        val members = KanbanInMemory.kanbanMembers
+        val members = getCurrentKanbanMembers()
 
         for(member in members){
             if(member.documentId == memberId) return member
@@ -230,11 +246,11 @@ class CardViewModel @Inject constructor(
         return null
     }
 
-    fun saveComment(commentText: String, onCommentSaved: () -> Unit) = viewModelScope.launch {
+    fun saveComment(commentText: String, onCommentSaved: () -> Unit) {
 
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanbanId = KanbanInMemory.currentKanban?.documentId
-        val cardId = CardInMemory.card?.documentId
+        val currentKanbanUserId = currentKanbanUserId
+        val currentKanbanId = getCurrentKanban()?.documentId
+        val cardId = card?.documentId
 
         if(currentKanbanUserId != null && currentKanbanId != null && cardId != null){
 
@@ -245,29 +261,30 @@ class CardViewModel @Inject constructor(
                 creationDate = DateUtil.getCurrentDateFormated()
             )
 
-            isLoading = true
-            commentUseCase.save(
-                userId = currentKanbanUserId,
-                kanbanId = currentKanbanId,
-                cardId = cardId,
-                comment = comment,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-                    onCommentSaved()
-                    comment.documentId = it
-                    addNewCommentInList(comment)
-                }
-            )
+            launchWithLoading {
+                commentUseCase.save(
+                    userId = currentKanbanUserId,
+                    kanbanId = currentKanbanId,
+                    cardId = cardId,
+                    comment = comment,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        onCommentSaved()
+                        comment.documentId = it
+                        addNewCommentInList(comment)
+                    }
+                )
+            }
         }
     }
 
-    fun updateComment(comment: Comment, onFinish: () -> Unit) = viewModelScope.launch{
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanban = KanbanInMemory.currentKanban
-        val cardId = CardInMemory.card?.documentId
+    fun updateComment(comment: Comment, onFinish: () -> Unit) {
+        val currentKanbanUserId = currentKanbanUserId
+        val currentKanban = getCurrentKanban()
+        val cardId = card?.documentId
 
         if(currentKanbanUserId != null
             && currentKanban != null
@@ -275,32 +292,33 @@ class CardViewModel @Inject constructor(
             && currentKanban.shared
             && cardId != null){
 
-            isLoading = true
+            launchWithLoading {
+                commentUseCase.update(
+                    currentKanbanUserId,
+                    kanbanId = currentKanban.documentId!!,
+                    cardId = cardId,
+                    comment = comment,
+                    onError = {
+                        stopLoading()
+                        onFinish()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        onFinish()
+                        addNewCommentInList(comment)
+                    }
+                )
+            }
 
-            commentUseCase.update(
-                currentKanbanUserId,
-                kanbanId = currentKanban.documentId!!,
-                cardId = cardId,
-                comment = comment,
-                onError = {
-                    isLoading = false
-                    onFinish()
-                },
-                onSuccess = {
-                    isLoading = false
-                    onFinish()
-                    addNewCommentInList(comment)
-                }
-            )
         } else {
             onFinish()
         }
     }
 
-    fun deleteComment(comment: Comment, onFinish: () -> Unit) = viewModelScope.launch {
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanban = KanbanInMemory.currentKanban
-        val cardId = CardInMemory.card?.documentId
+    fun deleteComment(comment: Comment, onFinish: () -> Unit) {
+        val currentKanbanUserId = currentKanbanUserId
+        val currentKanban = getCurrentKanban()
+        val cardId = card?.documentId
 
         if(currentKanbanUserId != null
             && currentKanban != null
@@ -309,32 +327,33 @@ class CardViewModel @Inject constructor(
             && cardId != null
             && comment.documentId != null){
 
-            isLoading = true
+            launchWithLoading {
+                commentUseCase.delete(
+                    currentKanbanUserId,
+                    kanbanId = currentKanban.documentId!!,
+                    cardId = cardId,
+                    commentId = comment.documentId!!,
+                    onError = {
+                        stopLoading()
+                        onFinish()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        onFinish()
+                        removeCommentFromList(comment)
+                    }
+                )
+            }
 
-            commentUseCase.delete(
-                currentKanbanUserId,
-                kanbanId = currentKanban.documentId!!,
-                cardId = cardId,
-                commentId = comment.documentId!!,
-                onError = {
-                    isLoading = false
-                    onFinish()
-                },
-                onSuccess = {
-                    isLoading = false
-                    onFinish()
-                    removeCommentFromList(comment)
-                }
-            )
         } else {
             onFinish()
         }
     }
 
-    private fun loadCardComments() = viewModelScope.launch {
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanban = KanbanInMemory.currentKanban
-        val cardId = CardInMemory.card?.documentId
+    private fun loadCardComments() {
+        val currentKanbanUserId = currentKanbanUserId
+        val currentKanban = getCurrentKanban()
+        val cardId = card?.documentId
 
         if(currentKanbanUserId != null
             && currentKanban != null
@@ -342,20 +361,21 @@ class CardViewModel @Inject constructor(
             && currentKanban.shared
             && cardId != null){
 
-            isLoading = true
+            launchWithLoading {
+                commentUseCase.getCommentsByCard(
+                    userId = currentKanbanUserId,
+                    kanbanId = currentKanban.documentId!!,
+                    cardId = cardId,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        comments = it
+                    }
+                )
+            }
 
-            commentUseCase.getCommentsByCard(
-                userId = currentKanbanUserId,
-                kanbanId = currentKanban.documentId!!,
-                cardId = cardId,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-                    comments = it
-                }
-            )
         }
     }
 
@@ -392,10 +412,10 @@ class CardViewModel @Inject constructor(
         }
     }
 
-    fun updateChecklist(card: Card, onFinish: () -> Unit) = viewModelScope.launch{
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
-        val currentKanban = KanbanInMemory.currentKanban
-        val cardId = CardInMemory.card?.documentId
+    fun updateChecklist(card: Card, onFinish: () -> Unit) {
+        val currentKanbanUserId = currentKanbanUserId
+        val currentKanban = getCurrentKanban()
+        val cardId = card?.documentId
 
         if(currentKanbanUserId != null
             && currentKanban != null
@@ -403,35 +423,37 @@ class CardViewModel @Inject constructor(
             && currentKanban.shared
             && cardId != null){
 
-            isLoading = true
+            launchWithLoading {
+                cardUseCase.updateCardChecklist(
+                    currentKanbanUserId,
+                    kanbanId = currentKanban.documentId!!,
+                    card = card,
+                    onError = {
+                        stopLoading()
+                        onFinish()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        onFinish()
+                    }
+                )
+            }
 
-            cardUseCase.updateCardChecklist(
-                currentKanbanUserId,
-                kanbanId = currentKanban.documentId!!,
-                card = card,
-                onError = {
-                    isLoading = false
-                    onFinish()
-                },
-                onSuccess = {
-                    isLoading = false
-                    onFinish()
-                }
-            )
         } else {
             onFinish()
         }
     }
 
-    fun deleteChecklistItem(card: Card?, key: String) = viewModelScope.launch{
-        isLoading = true
-        if(card != null) {
-            card.checklist?.remove(key)
-        } else {
-            checklistTemp?.remove(key)
+    fun deleteChecklistItem(card: Card?, key: String) {
+        launchWithLoading {
+            if(card != null) {
+                card.checklist?.remove(key)
+            } else {
+                checklistTemp?.remove(key)
+            }
+            isChecklistItemChanged = true
+            stopLoading()
         }
-        isChecklistItemChanged = true
-        isLoading = false
     }
 
 }

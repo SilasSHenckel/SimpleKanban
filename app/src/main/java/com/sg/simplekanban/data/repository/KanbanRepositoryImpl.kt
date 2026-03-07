@@ -13,21 +13,20 @@ import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE
 import com.sg.simplekanban.data.constants.Constants.Companion.IS_SHARED
 import com.sg.simplekanban.data.constants.Constants.Companion.NAME
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_USERS
-import com.sg.simplekanban.data.constants.Constants.Companion.TABLE_USER
-import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.TableHistory
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.repository.KanbanRepository
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class KanbanRepository @Inject constructor(
+class KanbanRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val tableHistoryUseCase: TableHistoryUseCase,
     private val context: Context
-){
+) : KanbanRepository {
 
-    fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).add(kanban)
@@ -39,7 +38,7 @@ class KanbanRepository @Inject constructor(
             }
     }
 
-    fun getKanbanById(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: (Kanban?) -> Unit){
+    override fun getKanbanById(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: (Kanban?) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId).get()
@@ -52,7 +51,7 @@ class KanbanRepository @Inject constructor(
             }
     }
 
-    suspend fun getKanbanSharedWithMeById(sharedWithMe: HashMap<String, String>) : List<Kanban>{
+    override suspend fun getKanbanSharedWithMeById(sharedWithMe: HashMap<String, String>) : List<Kanban>{
 
         val kanbansSharedWithMe = mutableListOf<Kanban>()
 
@@ -74,7 +73,7 @@ class KanbanRepository @Inject constructor(
         return kanbansSharedWithMe
     }
 
-    fun getCurrentUserKanbans(onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
+    override fun getCurrentUserKanbans(onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
         val userId = auth.currentUser?.uid
 
         if(userId != null){
@@ -100,7 +99,7 @@ class KanbanRepository @Inject constructor(
         }
     }
 
-    fun delete(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId).delete()
@@ -112,7 +111,7 @@ class KanbanRepository @Inject constructor(
             }
     }
 
-    fun update(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).set(kanban)
@@ -124,7 +123,7 @@ class KanbanRepository @Inject constructor(
             }
     }
 
-    fun updateKanbanName(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun updateKanbanName(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).update(NAME, kanban.name)
@@ -136,7 +135,7 @@ class KanbanRepository @Inject constructor(
             }
     }
 
-    fun updateKanbanShared(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit ){
+    override fun updateKanbanShared(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit ){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).update(

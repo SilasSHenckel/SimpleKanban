@@ -12,15 +12,16 @@ import com.sg.simplekanban.data.constants.Constants.Companion.COLUMN_ID
 import com.sg.simplekanban.data.constants.Constants.Companion.PRIORITY
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.TableHistory
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.repository.CardRepository
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import javax.inject.Inject
 
-class CardRepository @Inject constructor(
+class CardRepositoryImpl @Inject constructor(
     private val tableHistoryUseCase: TableHistoryUseCase,
     private val context: Context
-){
+) : CardRepository{
 
-    fun save(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -33,7 +34,7 @@ class CardRepository @Inject constructor(
             }
     }
 
-    fun getCardsByColumnId(userId: String, kanbanId: String, isKanbanShared: Boolean, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
+    override fun getCardsByColumnId(userId: String, kanbanId: String, isKanbanShared: Boolean, columnId: String, onError: (Throwable) -> Unit, onSuccess: (List<Card>) -> Unit){
 
         val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN + "/" + kanbanId + "/" + Constants.TABLE_CARD
 
@@ -53,7 +54,7 @@ class CardRepository @Inject constructor(
             }
     }
 
-    fun delete(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -66,7 +67,7 @@ class CardRepository @Inject constructor(
             }
     }
 
-    fun update(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -79,7 +80,7 @@ class CardRepository @Inject constructor(
             }
     }
 
-    fun updateCardColumnId(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun updateCardColumnId(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -92,7 +93,7 @@ class CardRepository @Inject constructor(
             }
     }
 
-    fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)

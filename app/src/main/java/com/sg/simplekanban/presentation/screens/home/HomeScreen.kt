@@ -52,14 +52,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.inMemory.CardInMemory
-import com.sg.simplekanban.data.inMemory.ColumnsInMemory
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
-import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.User
@@ -91,12 +88,13 @@ fun HomeScreen(
 
     SetStatusBarColor()
 
-    val selectedColumnId = ColumnsInMemory.selectedColumnId
     val isShowingDialog = homeViewModel.showMoveCardDialog
+    val currentKanban = homeViewModel.currentKanban.collectAsStateWithLifecycle().value
+    val selectedColumnId = homeViewModel.selectedColumnId.collectAsStateWithLifecycle().value
+    val columns = homeViewModel.currentKanbanColumns.collectAsStateWithLifecycle().value
 
-    val kanbanTitle = KanbanInMemory.currentKanban?.name ?: "Kanban 1"
-
-    val columns = ColumnsInMemory.currentKanbanColumns
+    val kanbanTitle = currentKanban?.name ?: "Kanban 1"
+    val card = homeViewModel.card
 
     Box(
         modifier = Modifier
@@ -136,8 +134,8 @@ fun HomeScreen(
                     name = column.name ?: "",
                     onTabClick = {
                         column.documentId?.let {
-                            if(it != ColumnsInMemory.selectedColumnId){
-                                ColumnsInMemory.selectedColumnId = it
+                            if(it != selectedColumnId){
+                                homeViewModel.setSelectedColumnId(it)
                                 homeViewModel.getCardsByColumnId(it)
 
                                 val scrollIndex = if(index > 0) index - 1 else index
@@ -153,13 +151,13 @@ fun HomeScreen(
             }
         }
 
-        if (isShowingDialog && CardInMemory.card != null){
+        if (isShowingDialog && card != null){
             val moveColumns = mutableListOf<Column>()
             for(column in columns){
-                if(column.documentId != CardInMemory.card!!.columnId) moveColumns.add(column)
+                if(column.documentId != card!!.columnId) moveColumns.add(column)
             }
             MoveCardDialog(
-                card = CardInMemory.card!!,
+                card = card,
                 columns = moveColumns,
                 homeViewModel = homeViewModel,
                 setShowDialog = { homeViewModel.showMoveCardDialog = it }
@@ -185,20 +183,18 @@ fun HomeScreen(
         }
 
         if(homeViewModel.showEditNameDialog){
-
-            val kanban = KanbanInMemory.currentKanban
-
-            if(kanban != null){
+            if(currentKanban != null){
                 EditKanbanNameDialog(
-                    kanban = kanban,
+                    kanban = currentKanban,
                     homeViewModel = homeViewModel,
                     setShowDialog = { homeViewModel.showEditNameDialog = it },
                 )
             }
         }
 
-        val isLoading = homeViewModel.isLoading
-        if(isLoading) MyProgressBar()
+        if(homeViewModel.isLoading.collectAsStateWithLifecycle().value){
+            MyProgressBar()
+        }
     }
 }
 
@@ -209,9 +205,9 @@ fun MyToolBar(
     homeViewModel: HomeViewModel
 ){
 
-    val kanbanMembers = KanbanInMemory.kanbanMembers
+    val kanbanMembers = homeViewModel.kanbanMembers.collectAsStateWithLifecycle()
 
-    val hasKanbanMembers = kanbanMembers.isNotEmpty()
+    val hasKanbanMembers = kanbanMembers.value.isNotEmpty()
 
     Column(
         modifier = Modifier
@@ -252,7 +248,7 @@ fun MyToolBar(
                 contentPadding = PaddingValues(all = 0.dp),
                 modifier = Modifier.height(30.dp)
             ) {
-                itemsIndexed(kanbanMembers){ index: Int, user: User ->
+                itemsIndexed(kanbanMembers.value){ index: Int, user: User ->
                     if(!user.photoUrl.isNullOrEmpty()){
                         GlideImage(
                             model = user.photoUrl,
@@ -287,7 +283,7 @@ fun MyBody(
     nav: NavHostController,
 ){
 
-    val cardList = CardInMemory.cards
+    val cardList = homeViewModel.cards.collectAsStateWithLifecycle().value
 
     Column(
         modifier = Modifier
@@ -295,7 +291,7 @@ fun MyBody(
             .padding(bottom = 60.dp)
     ) {
         
-        val kanbanMembers = KanbanInMemory.kanbanMembers
+        val kanbanMembers = homeViewModel.kanbanMembers.collectAsStateWithLifecycle()
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(space = 16.dp),
@@ -309,7 +305,7 @@ fun MyBody(
             }
 
             itemsIndexed(cardList) { index: Int, card: Card ->
-                MyListItem(card = card, nav, homeViewModel, kanbanMembers)
+                MyListItem(card = card, nav, homeViewModel, kanbanMembers.value)
             }
         }
     }
@@ -326,8 +322,8 @@ fun MyButtonAddCard(
         .height(40.dp)
         .background(color = SelectedBlue, shape = RoundedCornerShape(20.dp))
         .clickable {
-            CardInMemory.card = null
-            UserInMemory.userId = homeViewModel.userId
+            homeViewModel.setCard(null)
+            homeViewModel.updateUserIdWithFirebaseUser()
             nav.navigate(AppScreen.Card.name + "/" + columnId)
         },
         Alignment.Center,
@@ -372,12 +368,12 @@ fun MyListItem(
             )
             .combinedClickable(
                 onClick = {
-                    CardInMemory.card = card
-                    UserInMemory.userId = homeViewModel.userId
+                    homeViewModel.setCard(card)
+                    homeViewModel.updateUserIdWithFirebaseUser()
                     nav.navigate(AppScreen.Card.name + "/" + card.columnId)
                 },
                 onLongClick = {
-                    CardInMemory.card = card
+                    homeViewModel.setCard(card)
                     homeViewModel.showMoveCardDialog = true
                 },
             )

@@ -1,7 +1,7 @@
-package com.sg.simplekanban.domain
+package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.Kanban
-import com.sg.simplekanban.data.repository.SharedRepository
+import com.sg.simplekanban.domain.repository.SharedRepository
 import javax.inject.Inject
 
 class SharedUseCase @Inject constructor(

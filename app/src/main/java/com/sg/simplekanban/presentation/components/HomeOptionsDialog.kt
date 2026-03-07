@@ -27,7 +27,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.data.singleton.UserInMemory
 import com.sg.simplekanban.presentation.navigation.AppScreen
 import com.sg.simplekanban.presentation.screens.home.HomeViewModel
 
@@ -82,7 +82,7 @@ fun HomeOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-                            UserInMemory.userId = homeViewModel?.userId
+                            UserInMemory.userId = homeViewModel?.firebaseUserId
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)
                         },

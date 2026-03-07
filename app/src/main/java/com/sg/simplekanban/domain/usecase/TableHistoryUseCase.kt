@@ -1,8 +1,7 @@
-package com.sg.simplekanban.domain
-
+package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.TableHistory
-import com.sg.simplekanban.data.repository.TableHistoryRepository
+import com.sg.simplekanban.domain.repository.TableHistoryRepository
 import javax.inject.Inject
 
 class TableHistoryUseCase @Inject constructor(

@@ -17,19 +17,23 @@ import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_IN_REQUEST
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_UP_REQUEST
-import com.sg.simplekanban.data.repository.AuthRepository
-import com.sg.simplekanban.data.repository.CardRepository
-import com.sg.simplekanban.data.repository.ColumnRepository
-import com.sg.simplekanban.data.repository.CommentRepository
-import com.sg.simplekanban.data.repository.KanbanRepository
-import com.sg.simplekanban.data.repository.SharedRepository
-import com.sg.simplekanban.data.repository.UserRepository
-import com.sg.simplekanban.domain.CardUseCase
-import com.sg.simplekanban.domain.ColumnUseCase
-import com.sg.simplekanban.domain.CommentUseCase
-import com.sg.simplekanban.domain.KanbanUseCase
-import com.sg.simplekanban.domain.SharedUseCase
-import com.sg.simplekanban.domain.UserUseCase
+import com.sg.simplekanban.data.repository.AuthRepositoryImpl
+import com.sg.simplekanban.data.repository.CardRepositoryImpl
+import com.sg.simplekanban.data.repository.ColumnRepositoryImpl
+import com.sg.simplekanban.data.repository.CommentRepositoryImpl
+import com.sg.simplekanban.data.repository.KanbanRepositoryImpl
+import com.sg.simplekanban.data.repository.SharedRepositoryImpl
+import com.sg.simplekanban.data.repository.TableHistoryRepositoryImpl
+import com.sg.simplekanban.data.repository.UserRepositoryImpl
+import com.sg.simplekanban.domain.repository.AuthRepository
+import com.sg.simplekanban.domain.repository.CardRepository
+import com.sg.simplekanban.domain.repository.ColumnRepository
+import com.sg.simplekanban.domain.repository.CommentRepository
+import com.sg.simplekanban.domain.repository.KanbanRepository
+import com.sg.simplekanban.domain.repository.SharedRepository
+import com.sg.simplekanban.domain.repository.TableHistoryRepository
+import com.sg.simplekanban.domain.repository.UserRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,7 +42,7 @@ import javax.inject.Named
 
 @Module
 @InstallIn(ViewModelComponent::class)
-class AppModule {
+abstract class AppModule {
 
     @Provides
     fun provideContext(
@@ -112,7 +116,7 @@ class AppModule {
         signUpRequest: BeginSignInRequest,
         db: FirebaseFirestore,
         signInClient: GoogleSignInClient,
-    ): AuthRepository = AuthRepository(
+    ): AuthRepository = AuthRepositoryImpl(
         auth = auth,
         oneTapClient = oneTapClient,
         signInRequest = signInRequest,
@@ -121,22 +125,25 @@ class AppModule {
         signInClient = signInClient
     )
 
-    @Provides
-    fun provideCardUseCase(cardRepository: CardRepository): CardUseCase = CardUseCase(cardRepository)
+    @Binds
+    abstract fun provideCardRepository(cardRepository: CardRepositoryImpl): CardRepository
 
-    @Provides
-    fun provideColumnUseCase(columnRepository: ColumnRepository): ColumnUseCase = ColumnUseCase(columnRepository)
+    @Binds
+    abstract fun provideColumnRepository(columnRepository: ColumnRepositoryImpl): ColumnRepository
 
-    @Provides
-    fun provideCommentUseCase(commentRepository: CommentRepository): CommentUseCase = CommentUseCase(commentRepository)
+    @Binds
+    abstract fun provideCommentRepository(commentRepository: CommentRepositoryImpl): CommentRepository
 
-    @Provides
-    fun provideKanbanUseCase(kanbanRepository: KanbanRepository): KanbanUseCase = KanbanUseCase(kanbanRepository)
+    @Binds
+    abstract fun provideKanbanRepository(kanbanRepository: KanbanRepositoryImpl): KanbanRepository
 
-    @Provides
-    fun provideSharedUseCase(sharedRepository: SharedRepository): SharedUseCase = SharedUseCase(sharedRepository)
+    @Binds
+    abstract fun provideSharedRepository(sharedRepository: SharedRepositoryImpl): SharedRepository
 
-    @Provides
-    fun provideUserUseCase(userRepository: UserRepository): UserUseCase = UserUseCase(userRepository)
+    @Binds
+    abstract fun provideUserRepository(userRepository: UserRepositoryImpl): UserRepository
+
+    @Binds
+    abstract fun provideTableHistoryRepository(tableHistoryRepository: TableHistoryRepositoryImpl): TableHistoryRepository
 
 }

@@ -5,11 +5,12 @@ import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.model.Kanban
+import com.sg.simplekanban.domain.repository.SharedRepository
 import javax.inject.Inject
 
-class SharedRepository @Inject constructor(){
+class SharedRepositoryImpl @Inject constructor() : SharedRepository {
 
-    fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).add(kanban)
@@ -21,7 +22,7 @@ class SharedRepository @Inject constructor(){
             }
     }
 
-    fun getUserKanbans(userId: String, onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
+    override fun getUserKanbans(userId: String, onError: (Throwable) -> Unit, onSuccess: (List<Kanban>) -> Unit) {
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).get()
@@ -34,7 +35,7 @@ class SharedRepository @Inject constructor(){
             }
     }
 
-    fun delete(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, kanbanId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId).delete()
@@ -46,7 +47,7 @@ class SharedRepository @Inject constructor(){
             }
     }
 
-    fun update(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(userId: String, kanban: Kanban, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanban.documentId!!).set(kanban)

@@ -29,10 +29,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.inMemory.ColumnsInMemory
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.presentation.components.CreateColumnDialog
 import com.sg.simplekanban.presentation.components.MyToolBar
@@ -45,7 +45,7 @@ fun ColumnsScreen(
     columnsViewModel: ColumnsViewModel? = hiltViewModel()
 ) {
 
-    val columnsList = ColumnsInMemory.currentKanbanColumns
+    val columnsList = columnsViewModel?.currentKanbanColumns?.collectAsStateWithLifecycle()?.value
 
     Box (
         modifier = Modifier.fillMaxSize()
@@ -62,14 +62,11 @@ fun ColumnsScreen(
                 columnsViewModel = columnsViewModel,
                 setShowDialog = { columnsViewModel.showNewColumnDialog = it },
                 columnsViewModel.columnToEdit,
-                columnsList.size
+                columnsList?.size ?: 0
             )
         }
     }
-
 }
-
-
 
 @Composable
 fun MyBody(
@@ -77,7 +74,7 @@ fun MyBody(
     nav: NavHostController,
 ){
 
-    val columnsList = ColumnsInMemory.currentKanbanColumns
+    val columnsList = columnsViewModel?.currentKanbanColumns?.collectAsStateWithLifecycle()?.value ?: listOf()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -170,9 +167,6 @@ fun MyListItem(
 @Composable
 fun ColumnsScreenPreview() {
     Surface {
-        ColumnsScreen(
-            rememberNavController(),
-            null
-        )
+        ColumnsScreen(rememberNavController(), null)
     }
 }

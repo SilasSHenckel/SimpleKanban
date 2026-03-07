@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -67,9 +68,6 @@ import com.sg.simplekanban.presentation.components.DeleteCardDialog
 import com.sg.simplekanban.presentation.theme.PlaceholderGrey
 import com.sg.simplekanban.presentation.theme.Purple40
 import com.sg.simplekanban.presentation.theme.SelectedBlue
-import com.sg.simplekanban.data.inMemory.CardInMemory
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
-import com.sg.simplekanban.data.inMemory.UserInMemory
 import com.sg.simplekanban.data.model.Comment
 import com.sg.simplekanban.presentation.components.ChecklistDialog
 import com.sg.simplekanban.presentation.components.CommentOptionsDialog
@@ -88,8 +86,8 @@ fun CardScreen (
     cardViewModel: CardViewModel = hiltViewModel(),
 ){
 
-    val userId = UserInMemory.userId
-    val card = CardInMemory.card
+    val userId = cardViewModel.userId
+    val card = cardViewModel.card
 
     val isCreatingCard: Boolean = (card == null)
 
@@ -303,7 +301,9 @@ fun CardScreen (
 
                         Spacer(modifier = Modifier.height(34.dp))
 
-                        if (KanbanInMemory.currentKanban?.shared == true){
+                        val currentKanban = cardViewModel.currentKanban.collectAsStateWithLifecycle()
+
+                        if (currentKanban.value?.shared == true){
                             Row (
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -358,7 +358,7 @@ fun CardScreen (
                         Spacer(modifier = Modifier.height(20.dp))
 
                         if(!isCreatingCard){
-                            if (KanbanInMemory.currentKanban?.shared == true){
+                            if (currentKanban.value?.shared == true){
                                 Row (
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
@@ -545,10 +545,9 @@ fun CardScreen (
             }
         }
 
-
         if(cardViewModel.showSelectResponsibleDialog){
             SelectUserDialog(
-                users = KanbanInMemory.kanbanMembers,
+                users = cardViewModel.getCurrentKanbanMembers(),
                 setShowDialog = {cardViewModel.showSelectResponsibleDialog = false},
                 title = stringResource(id = R.string.responsible),
                 onSelectUser = { user ->
@@ -614,8 +613,9 @@ fun CardScreen (
             )
         }
 
-        val isLoading = cardViewModel.isLoading
-        if(isLoading) MyProgressBar()
+        if(cardViewModel.isLoading.collectAsStateWithLifecycle().value){
+            MyProgressBar()
+        }
     }
 
 }

@@ -1,7 +1,7 @@
-package com.sg.simplekanban.domain
+package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.Card
-import com.sg.simplekanban.data.repository.CardRepository
+import com.sg.simplekanban.domain.repository.CardRepository
 import javax.inject.Inject
 
 class CardUseCase @Inject constructor(

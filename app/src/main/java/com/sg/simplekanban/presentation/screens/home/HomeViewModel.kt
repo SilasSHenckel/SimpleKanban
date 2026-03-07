@@ -6,22 +6,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.preferences.AppPreferences
-import com.sg.simplekanban.data.inMemory.CardInMemory
-import com.sg.simplekanban.data.inMemory.ColumnsInMemory
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
-import com.sg.simplekanban.data.inMemory.UserInMemory
+import com.sg.simplekanban.data.singleton.CurrentKanbanManager
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.User
-import com.sg.simplekanban.domain.CardUseCase
-import com.sg.simplekanban.domain.ColumnUseCase
-import com.sg.simplekanban.domain.KanbanUseCase
-import com.sg.simplekanban.domain.UserUseCase
+import com.sg.simplekanban.data.singleton.CurrentCardManager
+import com.sg.simplekanban.data.singleton.CurrentColumnsManager
+import com.sg.simplekanban.data.singleton.CurrentUserManager
+import com.sg.simplekanban.domain.usecase.CardUseCase
+import com.sg.simplekanban.domain.usecase.ColumnUseCase
+import com.sg.simplekanban.domain.usecase.KanbanUseCase
+import com.sg.simplekanban.domain.usecase.UserUseCase
+import com.sg.simplekanban.presentation.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,10 +33,12 @@ class HomeViewModel @Inject constructor(
     private val cardUseCase: CardUseCase,
     private val kanbanUseCase: KanbanUseCase,
     private val appPreferences: AppPreferences,
-    private val userUseCase: UserUseCase
-): ViewModel() {
-
-    var isLoading by mutableStateOf(false)
+    private val userUseCase: UserUseCase,
+    private val currentKanbanManager: CurrentKanbanManager,
+    private val currentUserManager: CurrentUserManager,
+    private val currentCardManager: CurrentCardManager,
+    private val currentColumnsManager: CurrentColumnsManager
+): BaseViewModel() {
 
     var showOptionsDialog by mutableStateOf(false)
 
@@ -47,172 +50,198 @@ class HomeViewModel @Inject constructor(
 
     var userFounded by mutableStateOf<User?>(null)
 
-    var userId : String? = FirebaseAuth.getInstance().currentUser?.uid
+    var firebaseUserId : String? = FirebaseAuth.getInstance().currentUser?.uid
+
+    val currentKanban = currentKanbanManager.currentKanban
+    val kanbanMembers = currentKanbanManager.kanbanMembers
+    val selectedColumnId = currentColumnsManager.selectedColumnId
+    val currentKanbanColumns = currentColumnsManager.currentKanbanColumns
+    val cards = currentCardManager.cards
+
+    val currentKanbanUserId get() = currentUserManager.currentKanbanUserId
+    val userId get() = currentUserManager.userId
+    val card get() = currentCardManager.card
+
+    fun getCurrentKanban() = currentKanban.value
+    fun getCurrentKanbanColumns() = currentKanbanColumns.value
+    fun getCards() = cards.value
+
+    fun setCurrentKanban(kanban: Kanban?) = currentKanbanManager.setCurrentKanban(kanban)
+    fun setKanbanMembers(kanbanMembers: List<User>) = currentKanbanManager.setKanbanMembers(kanbanMembers)
+    fun setCurrentKanbanColumns(columns: List<Column>)= currentColumnsManager.setCurrentKanbanColumns(columns)
+    fun setSelectedColumnId(columnId: String) = currentColumnsManager.setSelectedColumnId(columnId)
+    fun setCurrentKanbanUserId(kanbanUserId: String?) = currentUserManager.setCurrentKanbanUserId(kanbanUserId)
+    fun setUserId(userId: String?) = currentUserManager.setUserId(userId)
+    fun setCard(newCard: Card?) = currentCardManager.setCard(newCard)
+    fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
 
     init {
         loadKanban()
     }
 
-    fun loadKanban() = viewModelScope.launch {
-        val lastKanbanId = appPreferences.getLastKanbanId()
-        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+    fun loadKanban() {
+        launchWithLoading {
+            val lastKanbanId = appPreferences.getLastKanbanId()
+            val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+            
+            if(lastKanbanId == null || lastKanbanUserId == null){
+                kanbanUseCase.getCurrentUserKanbans(
+                    onError = { exception ->
+                        stopLoading()
+                    },
+                    onSuccess = { list ->
+                        stopLoading()
+                        if(list.isNotEmpty()) {
+                            setCurrentKanban(list[0])
 
-        if(lastKanbanId == null || lastKanbanUserId == null){
-            isLoading = true
-            kanbanUseCase.getCurrentUserKanbans(
-                onError = { exception ->
-                    isLoading = false
+                            setCurrentKanbanUserId(firebaseUserId)
 
-                },
-                onSuccess = { list ->
-                    isLoading = false
-                    if(list.isNotEmpty()) {
-                        KanbanInMemory.currentKanban = list[0]
-                        UserInMemory.currentKanbanUserId = userId
+                            appPreferences.setLastKanbanId(list[0].documentId)
+                            appPreferences.setLastKanbanUserId(firebaseUserId)
 
-                        appPreferences.setLastKanbanId(list[0].documentId)
-                        appPreferences.setLastKanbanUserId(userId)
+                            verifyUsers(getCurrentKanban())
+                            getColumns()
+                        }
+                    }
+                )
+            } else {
+                kanbanUseCase.getKanbanById(lastKanbanUserId, lastKanbanId,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = { kanban ->
+                        setCurrentKanban(kanban)
+                        setCurrentKanbanUserId(lastKanbanUserId)
 
-                        if (KanbanInMemory.currentKanban != null) verifyUsers(KanbanInMemory.currentKanban!!)
+                        stopLoading()
+                        if (kanban != null) verifyUsers(kanban)
                         getColumns()
                     }
-                }
-            )
-        } else {
-            isLoading = true
-            kanbanUseCase.getKanbanById(lastKanbanUserId, lastKanbanId,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = { kanban ->
-                    KanbanInMemory.currentKanban = kanban
-                    UserInMemory.currentKanbanUserId = lastKanbanUserId
-
-                    isLoading = false
-                    if (kanban != null) verifyUsers(kanban)
-                    getColumns()
-                }
-            )
+                )
+            }
         }
+        
     }
 
-    private fun verifyUsers(currentKanban: Kanban) = viewModelScope.launch {
-        val currentKanbanUserId = UserInMemory.currentKanbanUserId
+    private fun verifyUsers(currentKanban: Kanban?) = viewModelScope.launch {
+        if(currentKanban == null) return@launch
+        
+        val currentKanbanUserId = currentKanbanUserId
         if(currentKanban.shared && currentKanbanUserId != null && !currentKanban.sharedWithUsers.isNullOrEmpty() && currentKanban.documentId != null){
             userUseCase.getKanbanMembers(currentKanbanUserId, currentKanban.documentId!!, currentKanban.sharedWithUsers!!,
-                onError = {
-
-                },
-                onSuccess = {
-                    KanbanInMemory.kanbanMembers = it
-                }
+                onError = {},
+                onSuccess = { setKanbanMembers(it) }
             )
         }
     }
 
-    fun moveCardToColumn(columnId: String, card: Card) = viewModelScope.launch {
+    fun moveCardToColumn(columnId: String, card: Card) {
         card.columnId = columnId
 
         val lastKanbanUserId = appPreferences.getLastKanbanUserId()
 
-        if(KanbanInMemory.currentKanban?.documentId != null && lastKanbanUserId != null){
-            isLoading = true
-            cardUseCase.updateCardColumnId(
-                lastKanbanUserId,
-                KanbanInMemory.currentKanban!!.documentId!!,
-                card,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-                    val newList = mutableListOf<Card>()
-                    newList.addAll(CardInMemory.cards)
-                    newList.remove(card)
-                    CardInMemory.cards = newList
-                }
-            )
-        }
-
-    }
-
-    fun getColumns() = viewModelScope.launch {
-
-        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
-        val currentKanban = KanbanInMemory.currentKanban
-
-        if(currentKanban?.documentId != null && lastKanbanUserId != null){
-            isLoading = true
-            columnUseCase.getColumnsByKanban(
-                lastKanbanUserId,
-                currentKanban.documentId!!,
-                currentKanban.shared,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = { list ->
-                    isLoading = false
-
-                    if (list.isNotEmpty()){
-                        list[0].documentId?.let {
-                            ColumnsInMemory.selectedColumnId = it
-                            getCardsByColumnId(it)
-                        }
+        if(getCurrentKanban()?.documentId != null && lastKanbanUserId != null){
+            launchWithLoading {
+                cardUseCase.updateCardColumnId(
+                    lastKanbanUserId,
+                    getCurrentKanban()?.documentId!!,
+                    card,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        val newList = mutableListOf<Card>()
+                        newList.addAll(getCards())
+                        newList.remove(card)
+                        setCards(newList)
                     }
+                )
+            }
+        }
+        
+    }
 
-                    ColumnsInMemory.currentKanbanColumns = list
-                }
-            )
+    fun getColumns() {
+
+        val lastKanbanUserId = appPreferences.getLastKanbanUserId()
+        val currentKanban = getCurrentKanban()
+
+        if(currentKanban?.documentId != null && lastKanbanUserId != null){
+            launchWithLoading {
+                columnUseCase.getColumnsByKanban(
+                    lastKanbanUserId,
+                    currentKanban.documentId!!,
+                    currentKanban.shared,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = { list ->
+                        stopLoading()
+
+                        if (list.isNotEmpty()){
+                            list[0].documentId?.let {
+                                setSelectedColumnId(it)
+                                getCardsByColumnId(it)
+                            }
+                        }
+
+                        setCurrentKanbanColumns(list)
+                    }
+                )
+            }
         }
     }
 
-    fun getCardsByColumnId(columnId: String) = viewModelScope.launch{
+    fun getCardsByColumnId(columnId: String) {
 
         val lastKanbanUserId = appPreferences.getLastKanbanUserId()
 
-        val currentKanban = KanbanInMemory.currentKanban
+        val currentKanban = getCurrentKanban()
 
         if(currentKanban?.documentId != null && lastKanbanUserId != null){
-            isLoading = true
-            cardUseCase.getCardsByColumnId(
-                lastKanbanUserId,
-                currentKanban.documentId!!,
-                currentKanban.shared,
-                columnId,
-                onError = {
-                    isLoading = false
+            launchWithLoading {
+                cardUseCase.getCardsByColumnId(
+                    lastKanbanUserId,
+                    currentKanban.documentId!!,
+                    currentKanban.shared,
+                    columnId,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = { list ->
+                        stopLoading()
+                        setCards(list)
+                    }
+                )
+            }
+        }
+    }
+
+    fun getUserByEmail(email: String, onSuccess: () -> Unit, context: Context) {
+        launchWithLoading {
+            userUseCase.getUserByEmail(
+                email,
+                onSuccess = {
+                    stopLoading()
+                    userFounded = it
+                    if(userFounded == null){
+                        Toast.makeText(context, ContextCompat.getString(context, R.string.user_not_found), Toast.LENGTH_LONG).show()
+                    }
+                    onSuccess()
                 },
-                onSuccess = { list ->
-                    isLoading = false
-                    CardInMemory.cards = list
+                onError = {
+                    stopLoading()
                 }
             )
         }
     }
 
-    fun getUserByEmail(email: String, onSuccess: () -> Unit, context: Context) = viewModelScope.launch {
-        isLoading = true
-        userUseCase.getUserByEmail(
-            email,
-            onSuccess = {
-                isLoading = false
-                userFounded = it
-                if(userFounded == null){
-                    Toast.makeText(context, ContextCompat.getString(context, R.string.user_not_found), Toast.LENGTH_LONG).show()
-                }
-                onSuccess()
-            },
-            onError = {
-                isLoading = false
-            }
-        )
-    }
+    fun shareKanbanWithUser(user: User, context: Context) {
+        val kanban = getCurrentKanban()
+        val kanbanUserId = currentKanbanUserId
 
-    fun shareKanbanWithUser(user: User, context: Context) = viewModelScope.launch{
-        val kanban = KanbanInMemory.currentKanban
-        val kanbanUserId = UserInMemory.currentKanbanUserId
-
-        if(kanban != null && userId != null){
+        if(kanban != null && firebaseUserId != null){
             val sharedList = kanban.sharedWithUsers ?: hashMapOf()
             if(!sharedList.containsKey(user.documentId) && user.documentId != null && user.email != null){
                 sharedList[user.documentId] = user.email!!
@@ -220,53 +249,54 @@ class HomeViewModel @Inject constructor(
             kanban.sharedWithUsers = sharedList
             kanban.shared = true
 
-            isLoading = true
-            kanbanUseCase.updateKanbanShared(
-                userId!!,
-                kanban,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    if(kanbanUserId != null){
-                        val sharedWithMe = user.sharedWithMe ?: hashMapOf()
-                        sharedWithMe[kanban.documentId!!] = kanbanUserId
-                        user.sharedWithMe = sharedWithMe
+            launchWithLoading {
+                kanbanUseCase.updateKanbanShared(
+                    firebaseUserId!!,
+                    kanban,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        if(kanbanUserId != null){
+                            val sharedWithMe = user.sharedWithMe ?: hashMapOf()
+                            sharedWithMe[kanban.documentId!!] = kanbanUserId
+                            user.sharedWithMe = sharedWithMe
 
-                        userUseCase.updateUserSharedKanbans(
-                            user,
-                            onError = {
-                                isLoading = false
-                            },
-                            onSuccess = {
-                                isLoading = false
-                                userFounded = null
-                                Toast.makeText(context, ContextCompat.getString(context, R.string.user_added), Toast.LENGTH_LONG).show()
-                            }
-                        )
+                            userUseCase.updateUserSharedKanbans(
+                                user,
+                                onError = {
+                                    stopLoading()
+                                },
+                                onSuccess = {
+                                    stopLoading()
+                                    userFounded = null
+                                    Toast.makeText(context, ContextCompat.getString(context, R.string.user_added), Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 
-    fun updateKanbanName(kanban: Kanban, onSuccess: () -> Unit) = viewModelScope.launch{
-        val kanbanUserId = UserInMemory.currentKanbanUserId
+    fun updateKanbanName(kanban: Kanban, onSuccess: () -> Unit){
+        val kanbanUserId = currentKanbanUserId
         if(kanbanUserId != null){
-            isLoading = true
-            kanbanUseCase.updateKanbanName(
-                kanbanUserId,
-                kanban,
-                onError = {
-                    isLoading = false
-                },
-                onSuccess = {
-                    isLoading = false
-                    onSuccess()
-                }
-            )
+            launchWithLoading {
+                kanbanUseCase.updateKanbanName(
+                    kanbanUserId,
+                    kanban,
+                    onError = {
+                        stopLoading()
+                    },
+                    onSuccess = {
+                        stopLoading()
+                        onSuccess()
+                    }
+                )
+            }
         }
-
     }
 
     fun getCardMember(memberId: String?, members: List<User>) : User? {
@@ -277,6 +307,10 @@ class HomeViewModel @Inject constructor(
         }
 
         return null
+    }
+
+    fun updateUserIdWithFirebaseUser(){
+        setUserId(firebaseUserId)
     }
 
 }

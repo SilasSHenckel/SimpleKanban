@@ -10,16 +10,17 @@ import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.TABLE_USER
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.TableHistory
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.repository.ColumnRepository
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class ColumnRepository @Inject constructor(
+class ColumnRepositoryImpl @Inject constructor(
     private val tableHistoryUseCase: TableHistoryUseCase,
     private val context: Context
-){
+) : ColumnRepository {
 
-    fun save(userId: String, kanbanId: String, column: Column, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(userId: String, kanbanId: String, column: Column, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -32,7 +33,7 @@ class ColumnRepository @Inject constructor(
             }
     }
 
-    fun getColumnsByKanban(userId: String, kanbanId: String, isKanbanShared: Boolean, onError: (Throwable) -> Unit, onSuccess: (List<Column>) -> Unit) {
+    override fun getColumnsByKanban(userId: String, kanbanId: String, isKanbanShared: Boolean, onError: (Throwable) -> Unit, onSuccess: (List<Column>) -> Unit) {
 
         val path = Constants.TABLE_USER + "/" + userId + "/" + Constants.TABLE_KANBAN + "/" + kanbanId + "/" + Constants.TABLE_COLUMN
 
@@ -54,7 +55,7 @@ class ColumnRepository @Inject constructor(
             }
     }
 
-    fun delete(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, kanbanId: String, columnId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -67,7 +68,7 @@ class ColumnRepository @Inject constructor(
             }
     }
 
-    fun update(userId: String, kanbanId: String, column: Column, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(userId: String, kanbanId: String, column: Column, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId)
             .collection(Constants.TABLE_KANBAN).document(kanbanId)
@@ -80,7 +81,7 @@ class ColumnRepository @Inject constructor(
             }
     }
 
-    suspend fun createKanbanDefaultColumns(userId: String, kanbanId: String) : Exception? {
+    override suspend fun createKanbanDefaultColumns(userId: String, kanbanId: String) : Exception? {
         try {
             Firebase.firestore.collection(TABLE_USER).document(userId).collection(Constants.TABLE_KANBAN).document(kanbanId).collection(Constants.TABLE_COLUMN).add(Column(name = "TO DO", priority = 0)).await()
             Firebase.firestore.collection(TABLE_USER).document(userId).collection(Constants.TABLE_KANBAN).document(kanbanId).collection(Constants.TABLE_COLUMN).add(Column(name = "DOING", priority = 1)).await()

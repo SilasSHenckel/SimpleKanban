@@ -3,7 +3,7 @@ package com.sg.simplekanban.di
 import android.content.Context
 import androidx.room.Room
 import com.sg.simplekanban.data.RoomAppDatabase
-import com.sg.simplekanban.data.repository.TableHistoryRepository
+import com.sg.simplekanban.data.repository.TableHistoryRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +26,7 @@ class RoomModule {
         .build()
 
     @Provides
-    fun provideTableHistoryRepository(database: RoomAppDatabase): TableHistoryRepository = TableHistoryRepository(
+    fun provideTableHistoryRepository(database: RoomAppDatabase): TableHistoryRepositoryImpl = TableHistoryRepositoryImpl(
         database.tableHistoryDao()
     )
 

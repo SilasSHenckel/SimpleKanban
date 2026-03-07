@@ -1,16 +1,18 @@
-package com.sg.simplekanban.domain
+package com.sg.simplekanban.domain.usecase
 
 import com.google.firebase.auth.AuthCredential
-import com.sg.simplekanban.data.repository.AuthRepository
 import com.sg.simplekanban.data.repository.OneTapSignInResponse
 import com.sg.simplekanban.data.repository.SignInWithGoogleResponse
+import com.sg.simplekanban.domain.repository.AuthRepository
 import javax.inject.Inject
 
 class AuthUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
 
-    fun isUserAuthenticatedInFirebase() = authRepository.isUserAuthenticatedInFirebase()
+    fun isUserAuthenticatedInFirebase() : Boolean {
+        return authRepository.isUserAuthenticatedInFirebase()
+    }
 
     suspend fun oneTapSignInWithGoogle(): OneTapSignInResponse {
         return authRepository.oneTapSignInWithGoogle()

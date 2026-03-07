@@ -7,7 +7,7 @@ import com.google.firebase.auth.AuthCredential
 import com.sg.simplekanban.data.model.response.Response
 import com.sg.simplekanban.data.repository.OneTapSignInResponse
 import com.sg.simplekanban.data.repository.SignInWithGoogleResponse
-import com.sg.simplekanban.domain.AuthUseCase
+import com.sg.simplekanban.domain.usecase.AuthUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -16,6 +16,7 @@ import com.sg.simplekanban.data.mapper.toUser
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.response.Response
+import com.sg.simplekanban.domain.repository.AuthRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Named
@@ -23,7 +24,7 @@ import javax.inject.Named
 typealias OneTapSignInResponse = Response<BeginSignInResult>
 typealias SignInWithGoogleResponse = Response<Boolean>
 
-class AuthRepository @Inject constructor(
+class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private var oneTapClient: SignInClient,
     @Named(SIGN_IN_REQUEST)
@@ -32,11 +33,13 @@ class AuthRepository @Inject constructor(
     private var signUpRequest: BeginSignInRequest,
     private var signInClient: GoogleSignInClient,
     private val db: FirebaseFirestore
-) {
+) : AuthRepository {
 
-    fun isUserAuthenticatedInFirebase() = auth.currentUser != null
+    override fun isUserAuthenticatedInFirebase() : Boolean {
+        return auth.currentUser != null
+    }
 
-     suspend fun oneTapSignInWithGoogle(): OneTapSignInResponse {
+     override suspend fun oneTapSignInWithGoogle(): OneTapSignInResponse {
         return try {
             val signInResult = oneTapClient.beginSignIn(signInRequest).await()
             Response.Success(signInResult)
@@ -50,7 +53,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun firebaseSignInWithGoogle(googleCredential: AuthCredential): SignInWithGoogleResponse {
+    override suspend fun firebaseSignInWithGoogle(googleCredential: AuthCredential): SignInWithGoogleResponse {
         return try {
             val authResult = auth.signInWithCredential(googleCredential).await()
             val isNewUser = authResult.additionalUserInfo?.isNewUser ?: false
@@ -63,7 +66,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun signOut(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
+    override suspend fun signOut(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
         return try {
             oneTapClient.signOut().await()
             auth.signOut()
@@ -73,7 +76,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteAccount(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
+    override suspend fun deleteAccount(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
         return try {
             auth.currentUser?.apply {
                 db.collection(TABLE_USER).document(uid).delete().await()

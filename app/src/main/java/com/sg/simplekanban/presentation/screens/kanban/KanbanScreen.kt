@@ -1,4 +1,6 @@
 package com.sg.simplekanban.presentation.screens.kanban
+
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,10 +39,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.presentation.components.CreateKanbanDialog
 import com.sg.simplekanban.presentation.components.DeleteKanbanDialog
@@ -81,11 +83,12 @@ fun KanbanScreen(
             )
         }
 
-        val isLoading = kanbanViewModel?.isLoading ?: false
+        val isLoading = kanbanViewModel?.isLoading?.collectAsStateWithLifecycle()?.value ?: false
         if(isLoading) MyProgressBar()
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun MyBody(
     kanbanViewModel: KanbanViewModel?,
@@ -99,7 +102,6 @@ fun MyBody(
             .fillMaxSize()
             .padding(start = 16.dp, end = 16.dp)
     ) {
-
 
         val sharedWithMeKanbans = kanbanViewModel?.sharedWithMeKanbans
 
@@ -223,7 +225,7 @@ fun MyListItem(
     isMyKanban : Boolean
 ){
 
-    val isCurrentKanban = kanban.documentId == KanbanInMemory.currentKanban?.documentId
+    val isCurrentKanban = kanban.documentId == kanbanViewModel?.getCurrentKanban()?.documentId
 
     val colorStops = if(isCurrentKanban) arrayOf(0.0f to Yellow, 1f to YellowLight)
     else arrayOf(0.0f to colorResource(id = R.color.card_background), 1f to colorResource(id = R.color.card_background))
@@ -239,7 +241,7 @@ fun MyListItem(
             .padding(16.dp)
             .clickable {
                 val kanbanUserId =
-                    if (isMyKanban) kanbanViewModel?.userId else kanbanViewModel?.getUserIdBySharedWithMeKanban(
+                    if (isMyKanban) kanbanViewModel?.firebaseUserId else kanbanViewModel?.getUserIdBySharedWithMeKanban(
                         kanban.documentId
                     )
                 kanbanViewModel?.selectKanban(kanbanUserId, kanban, nav)

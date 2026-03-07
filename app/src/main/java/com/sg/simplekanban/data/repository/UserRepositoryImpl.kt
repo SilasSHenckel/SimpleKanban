@@ -1,9 +1,7 @@
 package com.sg.simplekanban.data.repository
 
 import android.content.Context
-import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -14,16 +12,17 @@ import com.sg.simplekanban.data.constants.Constants.Companion.EMAIL
 import com.sg.simplekanban.data.constants.Constants.Companion.SHARED_WITH_ME
 import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.data.model.User
-import com.sg.simplekanban.domain.TableHistoryUseCase
+import com.sg.simplekanban.domain.repository.UserRepository
+import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class UserRepository @Inject constructor(
+class UserRepositoryImpl @Inject constructor(
     private val tableHistoryUseCase: TableHistoryUseCase,
     private val context: Context,
-){
+) : UserRepository{
 
-    fun save(user: User, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
+    override fun save(user: User, onError: (Throwable) -> Unit, onSuccess: (String) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).add(user)
             .addOnFailureListener { error ->
@@ -34,7 +33,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    fun getUser(userId: String, onError: (Throwable) -> Unit, onSuccess: (User?) -> Unit){
+    override fun getUser(userId: String, onError: (Throwable) -> Unit, onSuccess: (User?) -> Unit){
 
         val path = Constants.TABLE_USER + "/" + userId
         val source = DateUtil.getSourceOnlineOrCache(path, context,"yyyy/MM/dd-HH:mm", tableHistoryUseCase)
@@ -51,7 +50,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    fun getUserByEmail(email: String, onError: (Throwable) -> Unit, onSuccess: (User?) -> Unit){
+    override fun getUserByEmail(email: String, onError: (Throwable) -> Unit, onSuccess: (User?) -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).whereEqualTo(EMAIL, email).limit(1).get()
             .addOnFailureListener { error ->
@@ -63,7 +62,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    fun delete(userId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun delete(userId: String, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(userId).delete()
             .addOnFailureListener { error ->
@@ -74,7 +73,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    fun update(user: User, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun update(user: User, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(user.documentId!!).set(user)
             .addOnFailureListener { error ->
@@ -85,7 +84,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    fun updateUserSharedKanbans(user: User, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
+    override fun updateUserSharedKanbans(user: User, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         Firebase.firestore
             .collection(Constants.TABLE_USER).document(user.documentId!!).update(SHARED_WITH_ME, user.sharedWithMe)
             .addOnFailureListener { error ->
@@ -96,7 +95,7 @@ class UserRepository @Inject constructor(
             }
     }
 
-    suspend fun getKanbanMembers(kanbanUserId: String, kanbanId: String, sharedWithUsers: HashMap<String, String>, onError: (Throwable) -> Unit, onSuccess: (List<User>) -> Unit){
+    override suspend fun getKanbanMembers(kanbanUserId: String, kanbanId: String, sharedWithUsers: HashMap<String, String>, onError: (Throwable) -> Unit, onSuccess: (List<User>) -> Unit){
 
         try {
 

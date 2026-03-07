@@ -1,7 +1,7 @@
-package com.sg.simplekanban.domain
+package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.Column
-import com.sg.simplekanban.data.repository.ColumnRepository
+import com.sg.simplekanban.domain.repository.ColumnRepository
 import javax.inject.Inject
 
 class ColumnUseCase @Inject constructor(

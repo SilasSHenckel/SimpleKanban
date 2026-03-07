@@ -39,7 +39,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.inMemory.KanbanInMemory
+import com.sg.simplekanban.data.singleton.CurrentKanbanManager
 import com.sg.simplekanban.presentation.screens.home.HomeViewModel
 import com.sg.simplekanban.presentation.theme.PlaceholderGrey
 import com.sg.simplekanban.presentation.theme.Purple40
@@ -103,7 +103,7 @@ fun ShareKanbanDialog (
                                 if(showButton){
                                     if(email.text.isNotEmpty()){
                                         if(isEmailValid(email.text)){
-                                            if(!isAlreadySharedWithEmail(email.text, KanbanInMemory.currentKanban?.sharedWithUsers)){
+                                            if(!isAlreadySharedWithEmail(email.text, CurrentKanbanManager.currentKanban?.sharedWithUsers)){
                                                 homeViewModel?.getUserByEmail(
                                                     email.text,
                                                     onSuccess = {
@@ -186,7 +186,7 @@ fun ShareKanbanDialog (
 
                 }
 
-                val sharedWithUsers = KanbanInMemory.currentKanban?.sharedWithUsers
+                val sharedWithUsers = CurrentKanbanManager.currentKanban?.sharedWithUsers
                 if(sharedWithUsers != null){
                     Spacer(modifier = Modifier.height(40.dp))
 
