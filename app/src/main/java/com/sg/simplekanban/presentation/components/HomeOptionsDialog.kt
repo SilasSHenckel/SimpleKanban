@@ -27,7 +27,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
-import com.sg.simplekanban.data.singleton.UserInMemory
 import com.sg.simplekanban.presentation.navigation.AppScreen
 import com.sg.simplekanban.presentation.screens.home.HomeViewModel
 
@@ -59,7 +58,7 @@ fun HomeOptionsDialog (
                 modifier = Modifier.padding(30.dp)
             ) {
 
-                if(UserInMemory.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
+                if(homeViewModel?.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -82,7 +81,7 @@ fun HomeOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-                            UserInMemory.userId = homeViewModel?.firebaseUserId
+                            homeViewModel?.updateUserIdWithFirebaseUser()
                             nav.navigate(AppScreen.Columns.name)
                             setShowDialog(false)
                         },
@@ -94,7 +93,7 @@ fun HomeOptionsDialog (
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                if(UserInMemory.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
+                if(homeViewModel?.currentKanbanUserId == FirebaseAuth.getInstance().currentUser?.uid){
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()

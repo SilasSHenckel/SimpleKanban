@@ -70,9 +70,9 @@ class HomeViewModel @Inject constructor(
     fun setKanbanMembers(kanbanMembers: List<User>) = currentKanbanManager.setKanbanMembers(kanbanMembers)
     fun setCurrentKanbanColumns(columns: List<Column>)= currentColumnsManager.setCurrentKanbanColumns(columns)
     fun setSelectedColumnId(columnId: String) = currentColumnsManager.setSelectedColumnId(columnId)
-    fun setCurrentKanbanUserId(kanbanUserId: String?) = currentUserManager.setCurrentKanbanUserId(kanbanUserId)
-    fun setUserId(userId: String?) = currentUserManager.setUserId(userId)
-    fun setCard(newCard: Card?) = currentCardManager.setCard(newCard)
+    fun setCurrentKanbanUserId(kanbanUserId: String?) { currentUserManager.currentKanbanUserId = kanbanUserId }
+    fun setUserId(userId: String?) { currentUserManager.userId = userId }
+    fun setCard(newCard: Card?) { currentCardManager.card = (newCard) }
     fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
 
     init {

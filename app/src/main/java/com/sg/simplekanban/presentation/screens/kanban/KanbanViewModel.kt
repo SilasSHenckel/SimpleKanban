@@ -60,7 +60,7 @@ class KanbanViewModel @Inject constructor(
     fun setKanbanMembers(kanbanMembers: List<User>) = currentKanbanManager.setKanbanMembers(kanbanMembers)
     fun setSelectedColumnId(columnId: String) = currentColumnsManager.setSelectedColumnId(columnId)
     fun setCurrentKanbanColumns(columns: List<Column>)= currentColumnsManager.setCurrentKanbanColumns(columns)
-    fun setCurrentKanbanUserId(kanbanUserId: String?) = currentUserManager.setCurrentKanbanUserId(kanbanUserId)
+    fun setCurrentKanbanUserId(kanbanUserId: String?) { currentUserManager.currentKanbanUserId = (kanbanUserId) }
     fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
 
     init {

@@ -3,10 +3,10 @@ package com.sg.simplekanban.data.repository
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.CREATION_DATE

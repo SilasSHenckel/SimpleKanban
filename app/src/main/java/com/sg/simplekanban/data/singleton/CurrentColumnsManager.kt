@@ -1,8 +1,8 @@
 package com.sg.simplekanban.data.singleton
 
 import com.sg.simplekanban.data.model.Column
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

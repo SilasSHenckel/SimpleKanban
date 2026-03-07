@@ -9,10 +9,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.Firebase
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.data.constants.Constants.Companion.SIGN_IN_REQUEST
@@ -37,12 +37,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Named
 
 @Module
-@InstallIn(ViewModelComponent::class)
-abstract class AppModule {
+@InstallIn(SingletonComponent::class)
+class AppModule {
 
     @Provides
     fun provideContext(
@@ -124,6 +124,12 @@ abstract class AppModule {
         db = db,
         signInClient = signInClient
     )
+
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class AppModuleRepositories {
 
     @Binds
     abstract fun provideCardRepository(cardRepository: CardRepositoryImpl): CardRepository

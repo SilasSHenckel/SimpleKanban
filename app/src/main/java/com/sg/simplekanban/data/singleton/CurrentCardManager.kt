@@ -1,10 +1,10 @@
 package com.sg.simplekanban.data.singleton
 
 import com.sg.simplekanban.data.model.Card
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class CurrentCardManager @Inject constructor(){
@@ -16,10 +16,6 @@ class CurrentCardManager @Inject constructor(){
 
     fun setCards(cards: List<Card>) {
         _cards.value = cards
-    }
-
-    fun setCard(newCard: Card?) {
-        card = newCard
     }
 
 }

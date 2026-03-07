@@ -1,8 +1,8 @@
 package com.sg.simplekanban.data.repository
 
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObjects
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.domain.repository.SharedRepository

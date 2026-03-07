@@ -103,7 +103,7 @@ fun ShareKanbanDialog (
                                 if(showButton){
                                     if(email.text.isNotEmpty()){
                                         if(isEmailValid(email.text)){
-                                            if(!isAlreadySharedWithEmail(email.text, CurrentKanbanManager.currentKanban?.sharedWithUsers)){
+                                            if(!isAlreadySharedWithEmail(email.text, homeViewModel?.getCurrentKanban()?.sharedWithUsers)){
                                                 homeViewModel?.getUserByEmail(
                                                     email.text,
                                                     onSuccess = {
@@ -186,7 +186,7 @@ fun ShareKanbanDialog (
 
                 }
 
-                val sharedWithUsers = CurrentKanbanManager.currentKanban?.sharedWithUsers
+                val sharedWithUsers = homeViewModel?.getCurrentKanban()?.sharedWithUsers
                 if(sharedWithUsers != null){
                     Spacer(modifier = Modifier.height(40.dp))
 
