@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -23,8 +24,9 @@ import com.sg.simplekanban.presentation.screens.card.CardViewModel
 
 @Composable
 fun CommentOptionsDialog (
-    cardViewModel: CardViewModel,
     setShowDialog: (Boolean) -> Unit,
+    setShowEditCommentDialog: (Comment) -> Unit,
+    deleteComment: (Comment) -> Unit,
     comment : Comment,
 ) {
 
@@ -46,7 +48,7 @@ fun CommentOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-                            cardViewModel.showEditCommentDialog = comment
+                            setShowEditCommentDialog(comment)
                             setShowDialog(false)
                         },
                     text = stringResource(id = R.string.edit_comment).uppercase(),
@@ -62,7 +64,7 @@ fun CommentOptionsDialog (
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
                         .clickable {
-                            cardViewModel.deleteComment(comment, onFinish = {setShowDialog(false)})
+                            deleteComment(comment)
                         },
                     text = (stringResource(id = R.string.delete) + " "+ stringResource(id = R.string.comment)).uppercase(),
                     color = colorResource(id = R.color.title),
@@ -72,4 +74,15 @@ fun CommentOptionsDialog (
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun CommentOptionsDialogPreview(){
+    CommentOptionsDialog(
+        {},
+        {},
+        {} ,
+        Comment(text = "hey", authorId = "1", creationDate = "Today")
+    )
 }

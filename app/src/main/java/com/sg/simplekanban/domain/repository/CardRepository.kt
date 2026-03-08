@@ -1,6 +1,7 @@
 package com.sg.simplekanban.domain.repository
 
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.CardPriority
 
 interface CardRepository {
 
@@ -16,4 +17,5 @@ interface CardRepository {
 
     fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit)
 
+    fun getCardPriorities() : List<CardPriority>
 }

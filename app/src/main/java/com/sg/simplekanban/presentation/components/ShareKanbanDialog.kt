@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.firebase.auth.FirebaseAuth
@@ -146,9 +147,11 @@ fun ShareKanbanDialog (
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    val userFounded = userFounded.collectAsStateWithLifecycle().value
+
                     Row {
 
-                        if(userFounded.photoUrl != null){
+                        if(userFounded?.photoUrl != null){
 
                             Spacer(modifier = Modifier.width(10.dp))
 
@@ -163,7 +166,7 @@ fun ShareKanbanDialog (
 
                         Text(
                             modifier = Modifier.padding(start = 10.dp),
-                            text = userFounded.email ?: "",
+                            text = userFounded?.email ?: "",
                             color = colorResource(id = R.color.text),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
@@ -177,7 +180,7 @@ fun ShareKanbanDialog (
                             .height(36.dp)
                             .align(Alignment.End),
                         onClick = {
-                            homeViewModel.shareKanbanWithUser(userFounded, context)
+                            if(userFounded != null) homeViewModel.shareKanbanWithUser(userFounded, context)
                         },
                         colors = ButtonColors( SelectedBlue, Color.White , Purple40, Color.White)
                     ) {

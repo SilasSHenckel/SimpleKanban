@@ -2,21 +2,18 @@ package com.sg.simplekanban.presentation.screens.home
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.preferences.AppPreferences
-import com.sg.simplekanban.data.singleton.CurrentKanbanManager
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.User
 import com.sg.simplekanban.data.singleton.CurrentCardManager
 import com.sg.simplekanban.data.singleton.CurrentColumnsManager
+import com.sg.simplekanban.data.singleton.CurrentKanbanManager
 import com.sg.simplekanban.data.singleton.CurrentUserManager
 import com.sg.simplekanban.domain.usecase.CardUseCase
 import com.sg.simplekanban.domain.usecase.ColumnUseCase
@@ -24,6 +21,8 @@ import com.sg.simplekanban.domain.usecase.KanbanUseCase
 import com.sg.simplekanban.domain.usecase.UserUseCase
 import com.sg.simplekanban.presentation.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,15 +39,36 @@ class HomeViewModel @Inject constructor(
     private val currentColumnsManager: CurrentColumnsManager
 ): BaseViewModel() {
 
-    var showOptionsDialog by mutableStateOf(false)
+    private val _showOptionsDialog = MutableStateFlow(false)
+    val showOptionsDialog: StateFlow<Boolean> = _showOptionsDialog
 
-    var showShareDialog by mutableStateOf(false)
+    private val _showShareDialog = MutableStateFlow(false)
+    val showShareDialog: StateFlow<Boolean> = _showShareDialog
 
-    var showEditNameDialog by mutableStateOf(false)
+    private val _showEditNameDialog = MutableStateFlow(false)
+    val showEditNameDialog: StateFlow<Boolean> = _showEditNameDialog
 
-    var showMoveCardDialog by mutableStateOf(false)
+    private val _showMoveCardDialog = MutableStateFlow(false)
+    val showMoveCardDialog: StateFlow<Boolean> = _showMoveCardDialog
 
-    var userFounded by mutableStateOf<User?>(null)
+    private val _userFounded = MutableStateFlow<User?>(null)
+    val userFounded: StateFlow<User?> = _userFounded
+
+    fun setShowOptionsDialog(value: Boolean) {
+        _showOptionsDialog.value = value
+    }
+
+    fun setShowShareDialog(value: Boolean) {
+        _showShareDialog.value = value
+    }
+
+    fun setShowEditNameDialog(value: Boolean) {
+        _showEditNameDialog.value = value
+    }
+
+    fun setShowMoveCardDialog(value: Boolean) {
+        _showMoveCardDialog.value = value
+    }
 
     var firebaseUserId : String? = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -224,8 +244,8 @@ class HomeViewModel @Inject constructor(
                 email,
                 onSuccess = {
                     stopLoading()
-                    userFounded = it
-                    if(userFounded == null){
+                    _userFounded.value = it
+                    if(userFounded.value == null){
                         Toast.makeText(context, ContextCompat.getString(context, R.string.user_not_found), Toast.LENGTH_LONG).show()
                     }
                     onSuccess()
@@ -269,7 +289,7 @@ class HomeViewModel @Inject constructor(
                                 },
                                 onSuccess = {
                                     stopLoading()
-                                    userFounded = null
+                                    _userFounded.value = null
                                     Toast.makeText(context, ContextCompat.getString(context, R.string.user_added), Toast.LENGTH_LONG).show()
                                 }
                             )

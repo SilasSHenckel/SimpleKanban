@@ -1,8 +1,5 @@
 package com.sg.simplekanban.presentation.screens.card
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
@@ -18,8 +15,10 @@ import com.sg.simplekanban.data.singleton.CurrentUserManager
 import com.sg.simplekanban.domain.usecase.CardUseCase
 import com.sg.simplekanban.domain.usecase.CommentUseCase
 import com.sg.simplekanban.presentation.base.BaseViewModel
-import com.sg.simplekanban.presentation.model.Priority
+import com.sg.simplekanban.data.model.CardPriority
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,40 +32,56 @@ class CardViewModel @Inject constructor(
     private val resourceProvider: ResourceProvider
 ): BaseViewModel() {
 
-    var showDeleteCardDialog by mutableStateOf(false)
-    var showSelectResponsibleDialog by mutableStateOf(false)
-    var showSelectPriorityDialog by mutableStateOf(false)
-    var showChecklistDialog by mutableStateOf(false)
-    var showCommentOptionsDialog by mutableStateOf<Comment?>(null)
-    var showEditCommentDialog by mutableStateOf<Comment?>(null)
+    private val _showDeleteCardDialog = MutableStateFlow(false)
+    val showDeleteCardDialog: StateFlow<Boolean> = _showDeleteCardDialog
 
-    var showSelectStartDateDialog by mutableStateOf(false)
-    var showSelectFinalDateDialog by mutableStateOf(false)
+    private val _showSelectResponsibleDialog = MutableStateFlow(false)
+    val showSelectResponsibleDialog: StateFlow<Boolean> = _showSelectResponsibleDialog
 
-    var startDate by mutableStateOf<String?>(null)
-    var finalDate by mutableStateOf<String?>(null)
+    private val _showSelectPriorityDialog = MutableStateFlow(false)
+    val showSelectPriorityDialog: StateFlow<Boolean> = _showSelectPriorityDialog
 
-    var responsible by mutableStateOf<User?>(null)
-    var author by mutableStateOf<User?>(null)
+    private val _showChecklistDialog = MutableStateFlow(false)
+    val showChecklistDialog: StateFlow<Boolean> = _showChecklistDialog
 
-    var priority by mutableStateOf<Priority?>(null)
+    private val _showCommentOptionsDialog = MutableStateFlow<Comment?>(null)
+    val showCommentOptionsDialog: StateFlow<Comment?> = _showCommentOptionsDialog
 
-    var comments by mutableStateOf<List<Comment>>(listOf())
+    private val _showEditCommentDialog = MutableStateFlow<Comment?>(null)
+    val showEditCommentDialog: StateFlow<Comment?> = _showEditCommentDialog
+
+    private val _showSelectStartDateDialog = MutableStateFlow(false)
+    val showSelectStartDateDialog: StateFlow<Boolean> = _showSelectStartDateDialog
+
+    private val _showSelectFinalDateDialog = MutableStateFlow(false)
+    val showSelectFinalDateDialog: StateFlow<Boolean> = _showSelectFinalDateDialog
+
+    private val _startDate = MutableStateFlow<String?>(null)
+    val startDate: StateFlow<String?> = _startDate
+
+    private val _finalDate = MutableStateFlow<String?>(null)
+    val finalDate: StateFlow<String?> = _finalDate
+
+    private val _responsible = MutableStateFlow<User?>(null)
+    val responsible: StateFlow<User?> = _responsible
+
+    private val _author = MutableStateFlow<User?>(null)
+    val author: StateFlow<User?> = _author
+
+    private val _priority = MutableStateFlow<CardPriority?>(null)
+    val priority: StateFlow<CardPriority?> = _priority
+
+    private val _comments = MutableStateFlow<List<Comment>>(emptyList())
+    val comments: StateFlow<List<Comment>> = _comments
 
     var checklistTemp : HashMap<String, HashMap<String, Boolean>>? = null
 
     var isChecklistItemChanged = false
 
-    var priorities = listOf(
-        Priority(0, resourceProvider.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
-        Priority(1, resourceProvider.getString(R.string.low_priority), "#73FF88", "#0BA923"),
-        Priority(2, resourceProvider.getString(R.string.medium_priority), "#FFDA73", "#E49800"),
-        Priority(3, resourceProvider.getString(R.string.high_priority), "#FFA3A3", "#E83411"),
-    )
-
     val currentKanbanUserId get() = currentUserManager.currentKanbanUserId
     val userId get() = currentUserManager.userId
     val card get() = currentCardManager.card
+    var priorities = cardUseCase.getCardPriorities()
 
     val currentKanban = currentKanbanManager.currentKanban
     val currentKanbanMembers = currentKanbanManager.kanbanMembers
@@ -77,22 +92,70 @@ class CardViewModel @Inject constructor(
     fun getCurrentKanbanMembers() = currentKanbanMembers.value
     fun getSelectedColumnId() = selectedColumnId.value
     fun getCards() = cards.value
+
     fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
 
+    fun setShowDeleteCardDialog(value: Boolean) {
+        _showDeleteCardDialog.value = value
+    }
+
+    fun setShowSelectResponsibleDialog(value: Boolean) {
+        _showSelectResponsibleDialog.value = value
+    }
+
+    fun setShowSelectPriorityDialog(value: Boolean) {
+        _showSelectPriorityDialog.value = value
+    }
+
+    fun setShowChecklistDialog(value: Boolean) {
+        _showChecklistDialog.value = value
+    }
+
+    fun setShowCommentOptionsDialog(comment: Comment?) {
+        _showCommentOptionsDialog.value = comment
+    }
+
+    fun setShowEditCommentDialog(comment: Comment?) {
+        _showEditCommentDialog.value = comment
+    }
+
+    fun setShowSelectStartDateDialog(value: Boolean) {
+        _showSelectStartDateDialog.value = value
+    }
+
+    fun setShowSelectFinalDateDialog(value: Boolean) {
+        _showSelectFinalDateDialog.value = value
+    }
+
+    fun setResponsible(user: User?) {
+        _responsible.value = user
+    }
+
+    fun setPriority(priority: CardPriority?) {
+        _priority.value = priority
+    }
+
+    fun setStartDate(date: String?) {
+        _startDate.value = date
+    }
+
+    fun setFinalDate(date: String?) {
+        _finalDate.value = date
+    }
+
     init {
-        responsible = getKanbanMember(card?.responsibleId)
-        author = getKanbanMember(card?.ownerId)
+        _responsible.value = getKanbanMember(card?.responsibleId)
+        _author.value = getKanbanMember(card?.ownerId)
         loadCardPriority(card?.priority)
         loadCardComments()
     }
 
     private fun loadCardPriority(cardPriority: Int?){
-        if(cardPriority == null ) priority =
-            Priority(0, resourceProvider.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E")
+        if(cardPriority == null ) _priority.value = CardPriority(0, resourceProvider.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E")
         else {
             for (p in priorities){
                 if(p.id == cardPriority){
-                    priority = p
+                    _priority.value = p
                     return
                 }
             }
@@ -105,7 +168,7 @@ class CardViewModel @Inject constructor(
         columnId: String,
         priority: Int = 3,
         ownerId: String?,
-        nav: NavHostController
+        popBackStack : () -> Unit
     ) {
         launchWithLoading {
             val currentKanbanUserId = currentKanbanUserId
@@ -123,9 +186,7 @@ class CardViewModel @Inject constructor(
                     responsibleId = null
                 )
 
-                if(checklistTemp != null){
-                    card.checklist = checklistTemp
-                }
+                if(checklistTemp != null) card.checklist = checklistTemp
 
                 cardUseCase.save(
                     userId = currentKanbanUserId,
@@ -140,7 +201,7 @@ class CardViewModel @Inject constructor(
                         card.documentId = generatedId
 
                         addCardInList(card)
-                        nav.popBackStack()
+                        popBackStack()
                     }
                 )
             }
@@ -176,7 +237,7 @@ class CardViewModel @Inject constructor(
 
     }
 
-    fun updateCard(card: Card, nav: NavHostController) {
+    fun updateCard(card: Card, popBackStack : () -> Unit) {
         launchWithLoading {
             val currentKanbanUserId = currentKanbanUserId
             val currentKanbanId = getCurrentKanban()?.documentId
@@ -192,7 +253,7 @@ class CardViewModel @Inject constructor(
                     onSuccess = {
                         stopLoading()
                         addCardInList(card)
-                        nav.popBackStack()
+                        popBackStack()
                     }
                 )
             }
@@ -371,7 +432,7 @@ class CardViewModel @Inject constructor(
                     },
                     onSuccess = {
                         stopLoading()
-                        comments = it
+                        _comments.value = it
                     }
                 )
             }
@@ -381,7 +442,7 @@ class CardViewModel @Inject constructor(
 
     fun addNewCommentInList(comment: Comment){
         val newList = mutableListOf<Comment>()
-        newList.addAll(comments)
+        newList.addAll(comments.value)
 
         val index = hasCommentInList(comment)
 
@@ -390,11 +451,11 @@ class CardViewModel @Inject constructor(
 
         newList.sortByDescending { it.creationDate }
 
-        comments = newList
+        _comments.value = newList
     }
 
     private fun hasCommentInList(newComment: Comment): Int?{
-        for((index, comment) in comments.withIndex()){
+        for((index, comment) in comments.value.withIndex()){
             if(newComment.documentId == comment.documentId){
                 return index
             }
@@ -405,17 +466,17 @@ class CardViewModel @Inject constructor(
     fun removeCommentFromList(commentToRemove: Comment?){
         if (commentToRemove != null){
             val newList = mutableListOf<Comment>()
-            newList.addAll(comments)
+            newList.addAll(comments.value)
             newList.remove(commentToRemove)
 
-            comments = newList
+            _comments.value = newList
         }
     }
 
     fun updateChecklist(card: Card, onFinish: () -> Unit) {
         val currentKanbanUserId = currentKanbanUserId
         val currentKanban = getCurrentKanban()
-        val cardId = card?.documentId
+        val cardId = card.documentId
 
         if(currentKanbanUserId != null
             && currentKanban != null

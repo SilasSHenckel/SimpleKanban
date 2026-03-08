@@ -5,12 +5,14 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.Firebase
+import com.sg.simplekanban.R
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.constants.Constants
 import com.sg.simplekanban.data.constants.Constants.Companion.CHECKLIST
 import com.sg.simplekanban.data.constants.Constants.Companion.COLUMN_ID
 import com.sg.simplekanban.data.constants.Constants.Companion.PRIORITY
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.CardPriority
 import com.sg.simplekanban.data.model.TableHistory
 import com.sg.simplekanban.domain.repository.CardRepository
 import com.sg.simplekanban.domain.usecase.TableHistoryUseCase
@@ -104,6 +106,15 @@ class CardRepositoryImpl @Inject constructor(
             .addOnSuccessListener {
                 onSuccess()
             }
+    }
+
+    override fun getCardPriorities(): List<CardPriority> {
+        return listOf(
+            CardPriority(0, context.getString(R.string.select_priority), "#9E9E9E", "#3E3E3E"),
+            CardPriority(1, context.getString(R.string.low_priority), "#73FF88", "#0BA923"),
+            CardPriority(2, context.getString(R.string.medium_priority), "#FFDA73", "#E49800"),
+            CardPriority(3, context.getString(R.string.high_priority), "#FFA3A3", "#E83411"),
+        )
     }
 
 }

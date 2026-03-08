@@ -1,6 +1,7 @@
 package com.sg.simplekanban.domain.usecase
 
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.CardPriority
 import com.sg.simplekanban.domain.repository.CardRepository
 import javax.inject.Inject
 
@@ -30,6 +31,10 @@ class CardUseCase @Inject constructor(
 
     fun updateCardChecklist(userId: String, kanbanId: String, card: Card, onError: (Throwable) -> Unit, onSuccess: () -> Unit){
         cardRepository.updateCardChecklist(userId, kanbanId, card, onError, onSuccess)
+    }
+
+    fun getCardPriorities() : List<CardPriority>{
+        return cardRepository.getCardPriorities()
     }
 
 }

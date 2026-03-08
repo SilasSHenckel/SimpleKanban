@@ -1,8 +1,5 @@
 package com.sg.simplekanban.presentation.screens.kanban
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
@@ -22,6 +19,8 @@ import com.sg.simplekanban.domain.usecase.KanbanUseCase
 import com.sg.simplekanban.domain.usecase.UserUseCase
 import com.sg.simplekanban.presentation.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,15 +37,19 @@ class KanbanViewModel @Inject constructor(
     private val currentCardManager: CurrentCardManager
 ): BaseViewModel() {
 
-    var kanbans by mutableStateOf<List<Kanban>>(listOf())
+    private val _kanbans = MutableStateFlow<List<Kanban>>(emptyList())
+    val kanbans: StateFlow<List<Kanban>> = _kanbans
 
-    var showNewKanbanDialog by mutableStateOf(false)
+    private val _showNewKanbanDialog = MutableStateFlow(false)
+    val showNewKanbanDialog: StateFlow<Boolean> = _showNewKanbanDialog
 
-    var showDeleteKanbanDialog by mutableStateOf<Kanban?>(null)
+    private val _showDeleteKanbanDialog = MutableStateFlow<Kanban?>(null)
+    val showDeleteKanbanDialog: StateFlow<Kanban?> = _showDeleteKanbanDialog
+
+    private val _sharedWithMeKanbans = MutableStateFlow<List<Kanban>>(emptyList())
+    val sharedWithMeKanbans: StateFlow<List<Kanban>> = _sharedWithMeKanbans
 
     var currentUser : User? = null
-
-    var sharedWithMeKanbans by mutableStateOf<List<Kanban>>(listOf())
 
     var firebaseUserId : String? = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -56,6 +59,8 @@ class KanbanViewModel @Inject constructor(
 
     fun getCurrentKanban() = currentKanban.value
 
+    fun setShowNewKanbanDialog(show : Boolean){ _showNewKanbanDialog.value = show }
+    fun setShowDeleteKanbanDialog(kanban : Kanban?){ _showDeleteKanbanDialog.value = kanban }
     fun setCurrentKanban(kanban: Kanban?) = currentKanbanManager.setCurrentKanban(kanban)
     fun setKanbanMembers(kanbanMembers: List<User>) = currentKanbanManager.setKanbanMembers(kanbanMembers)
     fun setSelectedColumnId(columnId: String) = currentColumnsManager.setSelectedColumnId(columnId)
@@ -88,7 +93,7 @@ class KanbanViewModel @Inject constructor(
 
     private fun loadSharedWithMeKanbans(currentUser: User?) = viewModelScope.launch {
         if(currentUser != null && !currentUser.sharedWithMe.isNullOrEmpty()){
-            sharedWithMeKanbans = kanbanUseCase.getKanbanSharedWithMeById(currentUser.sharedWithMe!!)
+            _sharedWithMeKanbans.value = kanbanUseCase.getKanbanSharedWithMeById(currentUser.sharedWithMe!!)
         }
     }
 
@@ -107,13 +112,13 @@ class KanbanViewModel @Inject constructor(
                 },
                 onSuccess = {
                     stopLoading()
-                    kanbans = it
+                    _kanbans.value = it
                 }
             )
         }
     }
 
-    fun selectKanban(kanbanUserId: String?, kanban: Kanban, nav: NavHostController){
+    fun selectKanban(kanbanUserId: String?, kanban: Kanban, popBackStack: () -> Unit){
         if(kanbanUserId != null && getCurrentKanban()?.documentId != kanban.documentId){
 
             appPreferences.setLastKanbanId(kanban.documentId)
@@ -124,9 +129,9 @@ class KanbanViewModel @Inject constructor(
 
             verifyUsers(kanban)
 
-            getColumns(kanbanUserId, kanban, nav)
+            getColumns(kanbanUserId, kanban, popBackStack)
         } else {
-            nav.popBackStack()
+            popBackStack()
         }
     }
 
@@ -142,7 +147,7 @@ class KanbanViewModel @Inject constructor(
         }
     }
 
-    fun getColumns(kanbanUserId: String?, kanban: Kanban, nav: NavHostController) {
+    fun getColumns(kanbanUserId: String?, kanban: Kanban, popBackStack: () -> Unit) {
         if(kanban.documentId != null && kanbanUserId != null){
             launchWithLoading {
                 columnUseCase.getColumnsByKanban(
@@ -160,10 +165,10 @@ class KanbanViewModel @Inject constructor(
                         if (list.isNotEmpty()){
                             list[0].documentId?.let {
                                 setSelectedColumnId(it)
-                                getCardsByColumnId(kanbanUserId, kanban, it, nav)
+                                getCardsByColumnId(kanbanUserId, kanban, it, popBackStack)
                             }
                         } else {
-                            nav.popBackStack()
+                            popBackStack()
                         }
                     }
                 )
@@ -171,7 +176,7 @@ class KanbanViewModel @Inject constructor(
         }
     }
 
-    fun getCardsByColumnId(kanbanUserId: String?, kanban: Kanban, columnId: String, nav: NavHostController) {
+    fun getCardsByColumnId(kanbanUserId: String?, kanban: Kanban, columnId: String, popBackStack: () -> Unit) {
         if(kanban.documentId != null && kanbanUserId != null){
             launchWithLoading {
                 cardUseCase.getCardsByColumnId(
@@ -185,7 +190,7 @@ class KanbanViewModel @Inject constructor(
                     onSuccess = { list ->
                         stopLoading()
                         setCards(list)
-                        nav.popBackStack()
+                        popBackStack()
                     }
                 )
             }
@@ -230,9 +235,9 @@ class KanbanViewModel @Inject constructor(
 
                 //success
                 val newList = mutableListOf<Kanban>()
-                newList.addAll(kanbans)
+                newList.addAll(_kanbans.value)
                 newList.add(kanban)
-                kanbans = newList
+                _kanbans.value = newList
 
                 onSave(kanban)
             } else {
@@ -257,9 +262,9 @@ class KanbanViewModel @Inject constructor(
                     onSuccess = {
                         stopLoading()
                         val newList : MutableList<Kanban> = mutableListOf()
-                        newList.addAll(kanbans)
+                        newList.addAll(_kanbans.value)
                         newList.remove(kanban)
-                        kanbans = newList
+                        _kanbans.value = newList
 
                         setShowDialog(null)
                     }

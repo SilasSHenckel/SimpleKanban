@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -42,9 +43,9 @@ import com.sg.simplekanban.presentation.theme.SelectedBlue
 
 @Composable
 fun EditCommentDialog (
-    cardViewModel: CardViewModel,
     setShowDialog: (Boolean) -> Unit,
     commentToEdit : Comment,
+    updateComment: (Comment) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -59,7 +60,7 @@ fun EditCommentDialog (
         ) {
 
             var showButton by remember { mutableStateOf(false) }
-            var commentText by remember { mutableStateOf(TextFieldValue(commentToEdit?.text ?: "")) }
+            var commentText by remember { mutableStateOf(TextFieldValue(commentToEdit.text ?: "")) }
 
             Column(
                 modifier = Modifier.padding(40.dp)
@@ -112,7 +113,7 @@ fun EditCommentDialog (
                                 if(commentText.text.isNotEmpty()){
                                     if(commentToEdit.text != commentText.text){
                                         commentToEdit.text = commentText.text
-                                        cardViewModel.updateComment(commentToEdit, onFinish = {setShowDialog(false)})
+                                        updateComment(commentToEdit)
                                     } else {
                                         setShowDialog(false)
                                     }
@@ -131,4 +132,14 @@ fun EditCommentDialog (
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun EditCommentDialogPreview(){
+    EditCommentDialog(
+        {},
+        Comment(text = "hey", authorId = "1", creationDate = "Today"),
+        {} ,
+    )
 }

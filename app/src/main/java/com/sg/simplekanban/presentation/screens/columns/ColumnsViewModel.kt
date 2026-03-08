@@ -1,8 +1,5 @@
 package com.sg.simplekanban.presentation.screens.columns
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.singleton.CurrentColumnsManager
 import com.sg.simplekanban.data.singleton.CurrentKanbanManager
@@ -10,6 +7,8 @@ import com.sg.simplekanban.data.singleton.CurrentUserManager
 import com.sg.simplekanban.domain.usecase.ColumnUseCase
 import com.sg.simplekanban.presentation.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,7 +19,12 @@ class ColumnsViewModel @Inject constructor(
     private val currentColumnsManager: CurrentColumnsManager
 ): BaseViewModel() {
 
-    var showNewColumnDialog by mutableStateOf(false)
+    private val _showNewColumnDialog = MutableStateFlow(false)
+    val showNewColumnDialog: StateFlow<Boolean> = _showNewColumnDialog
+
+    fun setShowNewColumnDialog(value: Boolean) {
+        _showNewColumnDialog.value = value
+    }
 
     var columnToEdit : Column? = null
 

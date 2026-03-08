@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -38,8 +39,6 @@ fun SelectUserDialog (
     title: String,
     onSelectUser: (User) -> Unit,
 ) {
-
-    val context = LocalContext.current
 
     Dialog(
         onDismissRequest = { setShowDialog(false) }
@@ -103,6 +102,19 @@ fun SelectUserDialog (
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun SelectUserDialogPreview(){
+
+    SelectUserDialog(
+        users =  listOf(User(name = "Messi", email = "messi@messi.com"), User(name = "Cr7", email = "cr7@messi.com")),
+        setShowDialog = {},
+        title = "teste",
+        onSelectUser = {},
+    )
+
 }
 
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sg.simplekanban.R
 import com.sg.simplekanban.data.model.Card
 import com.sg.simplekanban.presentation.screens.card.CardViewModel
@@ -28,10 +29,8 @@ import com.sg.simplekanban.presentation.theme.CancelGrey
 
 @Composable
 fun DeleteCardDialog (
-    card: Card,
-    cardViewModel: CardViewModel?,
     setShowDialog: (Boolean) -> Unit,
-    requestCloseScreen: () -> Unit,
+    deleteCard: () -> Unit,
 ) {
 
     Dialog(onDismissRequest = { setShowDialog(false) }) {
@@ -78,7 +77,7 @@ fun DeleteCardDialog (
                         modifier = Modifier
                             .padding(horizontal = 10.dp, vertical = 10.dp)
                             .clickable {
-                                cardViewModel?.deleteCard(card, setShowDialog, requestCloseScreen)
+                                deleteCard()
                             },
                         text = stringResource(id = R.string.delete),
                         color = colorResource(id = R.color.title),
@@ -100,11 +99,8 @@ fun DeleteCardDialog (
 @Preview
 @Composable
 fun DeleteCardDialogPreview(){
-
    DeleteCardDialog(
-       Card(title = "Quarquer coisa"),
-       null,
-       {}, {}
+       {},
+       {}
    )
-
 }

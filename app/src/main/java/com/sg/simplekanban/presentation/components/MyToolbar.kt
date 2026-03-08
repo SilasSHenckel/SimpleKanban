@@ -19,13 +19,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.sg.simplekanban.R
 
 @Composable
 fun MyToolBar(
     title: String,
-    nav: NavHostController,
+    popBackStack : () -> Unit
 ){
     Row(
         modifier = Modifier
@@ -37,9 +36,7 @@ fun MyToolBar(
     ){
 
         IconButton(
-            onClick = {
-                nav.popBackStack()
-            }
+            onClick = popBackStack
         ) {
             Icon(
                 imageVector = Icons.Rounded.ArrowBack,

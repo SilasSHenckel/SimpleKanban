@@ -1,6 +1,6 @@
-package com.sg.simplekanban.presentation.model
+package com.sg.simplekanban.data.model
 
-data class Priority(
+data class CardPriority(
     var id : Int? = null,
     var name : String? = null,
     var color1 : String? = null,

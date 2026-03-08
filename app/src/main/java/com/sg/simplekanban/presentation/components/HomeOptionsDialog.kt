@@ -64,7 +64,7 @@ fun HomeOptionsDialog (
                             .fillMaxWidth()
                             .padding(vertical = 5.dp)
                             .clickable {
-                                homeViewModel?.showEditNameDialog = true
+                                homeViewModel?.setShowEditNameDialog(true)
                                 setShowDialog(false)
                             },
                         text = stringResource(id = R.string.change_kanban_name),
@@ -99,7 +99,7 @@ fun HomeOptionsDialog (
                             .fillMaxWidth()
                             .padding(vertical = 5.dp)
                             .clickable {
-                                homeViewModel?.showShareDialog = true
+                                homeViewModel?.setShowShareDialog(true)
                                 setShowDialog(false)
                             },
                         text = stringResource(id = R.string.share),

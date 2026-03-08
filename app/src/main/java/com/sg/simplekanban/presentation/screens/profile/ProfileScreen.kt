@@ -5,12 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.sg.simplekanban.presentation.components.DeleteAccountDialog
@@ -28,7 +29,7 @@ fun ProfileScreen(
         modifier = Modifier.fillMaxSize()
     ){
 
-        ScreenContent (
+        ProfileScreenContent (
             photoUrl = profileViewModel.currentUser?.photoUrl,
             userName = profileViewModel.getUserName(),
             userEmail = profileViewModel.getUserEmail(),
@@ -52,7 +53,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ScreenContent(
+fun ProfileScreenContent(
     userName: String,
     userEmail: String,
     photoUrl: String?,
@@ -78,15 +79,17 @@ fun ScreenContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview()
 @Composable
-fun ScreenContentPreview(){
-    ScreenContent(
-        photoUrl = null,
-        userName = "Lucas",
-        userEmail = "lucas@email.com",
-        onBackClick = {},
-        onLogoutClick = {},
-        onClickDeleteAccount = {}
-    )
+fun ProfileScreenContentPreview(){
+    Surface {
+        ProfileScreenContent(
+            photoUrl = null,
+            userName = "Lucas",
+            userEmail = "lucas@email.com",
+            onBackClick = {},
+            onLogoutClick = {},
+            onClickDeleteAccount = {}
+        )
+    }
 }

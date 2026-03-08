@@ -1,7 +1,5 @@
 package com.sg.simplekanban.presentation.screens.card
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,17 +18,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,36 +42,27 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.R
-import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.model.Card
-import com.sg.simplekanban.presentation.components.DeleteCardDialog
-import com.sg.simplekanban.presentation.theme.PlaceholderGrey
-import com.sg.simplekanban.presentation.theme.Purple40
-import com.sg.simplekanban.presentation.theme.SelectedBlue
-import com.sg.simplekanban.data.model.Comment
-import com.sg.simplekanban.presentation.components.ChecklistDialog
-import com.sg.simplekanban.presentation.components.CommentOptionsDialog
-import com.sg.simplekanban.presentation.components.DateAndTimePickerDialog
-import com.sg.simplekanban.presentation.components.EditCommentDialog
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sg.simplekanban.presentation.components.MyCommentTextField
-import com.sg.simplekanban.presentation.components.MyProgressBar
-import com.sg.simplekanban.presentation.components.SelectPriorityDialog
-import com.sg.simplekanban.presentation.components.SelectUserDialog
+import com.sg.simplekanban.presentation.screens.card.components.CardScreenDialogs
+import com.sg.simplekanban.presentation.screens.card.components.CommentItem
+import com.sg.simplekanban.presentation.screens.card.components.DescriptionTextField
+import com.sg.simplekanban.presentation.screens.card.components.SaveOrUpdateButton
+import com.sg.simplekanban.presentation.screens.card.components.TitleTextField
+import com.sg.simplekanban.presentation.screens.card.components.onSaveClick
+import com.sg.simplekanban.presentation.screens.card.components.onUpdateClick
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -87,7 +73,7 @@ fun CardScreen (
 ){
 
     val userId = cardViewModel.userId
-    val card = cardViewModel.card
+    val card : Card? = cardViewModel.card
 
     val isCreatingCard: Boolean = (card == null)
 
@@ -128,7 +114,7 @@ fun CardScreen (
                         }
                     ) {
                         androidx.compose.material.Icon(
-                            imageVector = Icons.Rounded.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = null,
                             tint = colorResource(id = R.color.title)
                         )
@@ -144,32 +130,22 @@ fun CardScreen (
                     )
                 }
 
-
-
                 Row (
                     modifier = Modifier
                         .align(alignment = Alignment.CenterEnd),
                 ){
 
                     if(showButton){
-                        Button(
-                            onClick = {
-                                if(isCreatingCard){
-                                    onSaveClick(title.text, description.text, columnId ?: "0", cardViewModel.priority?.id ?: 0, userId, context, cardViewModel, nav)
-                                } else {
-                                    onUpdateClick(card, title.text, description.text, context, cardViewModel, nav)
-                                }
-                            },
-                            colors = ButtonColors(SelectedBlue, Color.White, Purple40, Color.White)
-                        ) {
-                            Text(text = if(isCreatingCard) stringResource(id = R.string.save) else stringResource(id = R.string.update))
-                        }
+                        SaveOrUpdateButton(
+                            isCreatingCard = isCreatingCard,
+                            onSave = { onSaveClick(title.text, description.text, columnId ?: "0", cardViewModel.priority.value?.id ?: 0, userId, context, cardViewModel, { nav.popBackStack() })} ,
+                            onUpdate = { onUpdateClick(card, title.text, description.text, context, cardViewModel, { nav.popBackStack() })}
+                        )
                     }
-
 
                     if(!isCreatingCard){
                         IconButton(
-                            onClick = { cardViewModel.showDeleteCardDialog = true }
+                            onClick = { cardViewModel.setShowDeleteCardDialog(true) }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -226,7 +202,7 @@ fun CardScreen (
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
 
-                            val selectedPriority = cardViewModel.priority
+                            val selectedPriority = cardViewModel.priority.collectAsStateWithLifecycle().value
 
                             Button(
                                 modifier = Modifier
@@ -249,7 +225,7 @@ fun CardScreen (
                                 contentPadding = PaddingValues(5.dp),
 
                                 onClick = {
-                                    cardViewModel.showSelectPriorityDialog = true
+                                    cardViewModel.setShowSelectPriorityDialog(true)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                             ) {
@@ -281,7 +257,7 @@ fun CardScreen (
                                 contentPadding = PaddingValues(5.dp),
 
                                 onClick = {
-                                    cardViewModel.showChecklistDialog = true
+                                    cardViewModel.setShowChecklistDialog(true)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                             ) {
@@ -319,7 +295,7 @@ fun CardScreen (
                                     fontSize = 18.sp
                                 )
 
-                                val responsible = cardViewModel.responsible
+                                val responsible = cardViewModel.responsible.collectAsStateWithLifecycle().value
 
                                 if(responsible?.photoUrl == null){
                                     Image(
@@ -345,7 +321,7 @@ fun CardScreen (
                                     modifier = Modifier
                                         .width((width * 3) - 52.dp)
                                         .clickable {
-                                            cardViewModel.showSelectResponsibleDialog = true
+                                            cardViewModel.setShowSelectResponsibleDialog(true)
                                         },
                                     text = responsible?.name ?: (responsible?.email ?: stringResource(id = R.string.not_assigned))  ,
                                     color = colorResource(id = R.color.title),
@@ -374,7 +350,7 @@ fun CardScreen (
                                         fontSize = 18.sp
                                     )
 
-                                    val author = cardViewModel.author
+                                    val author = cardViewModel.author.collectAsStateWithLifecycle().value
 
                                     if(author?.photoUrl == null ){
                                         Image(
@@ -424,15 +400,15 @@ fun CardScreen (
                                     fontSize = 18.sp
                                 )
 
-                                val startDate = cardViewModel.startDate ?: card?.startDate
+                                val startDate = cardViewModel.startDate.value ?: card?.startDate
 
                                 Text(
                                     modifier = Modifier
                                         .width((width * 3) - 52.dp)
                                         .clickable {
-                                            cardViewModel.showSelectStartDateDialog = true
+                                            cardViewModel.setShowSelectStartDateDialog(true)
                                         },
-                                    text = if(startDate != null) startDate else stringResource(id = R.string.select),
+                                    text = startDate ?: stringResource(id = R.string.select),
                                     color = if(startDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
                                     fontSize = 16.sp
                                 )
@@ -455,15 +431,15 @@ fun CardScreen (
                                     fontSize = 18.sp
                                 )
 
-                                val endDate = cardViewModel.finalDate ?: card?.endDate
+                                val endDate = cardViewModel.finalDate.collectAsStateWithLifecycle().value ?: card?.endDate
 
                                 Text(
                                     modifier = Modifier
                                         .width((width * 3) - 52.dp)
                                         .clickable {
-                                            cardViewModel.showSelectFinalDateDialog = true
+                                            cardViewModel.setShowSelectFinalDateDialog(true)
                                         },
-                                    text =  if(endDate != null) endDate else stringResource(id = R.string.select),
+                                    text = endDate ?: stringResource(id = R.string.select),
                                     color = if(endDate != null) colorResource(id = R.color.title) else colorResource(id = R.color.hint),
                                     fontSize = 16.sp
                                 )
@@ -486,7 +462,6 @@ fun CardScreen (
                             var showCommentButton by remember { mutableStateOf(false) }
 
                             Spacer(modifier = Modifier.height(24.dp))
-
 
                             MyCommentTextField(
                                 text = newComment,
@@ -514,7 +489,7 @@ fun CardScreen (
                     }
                 }
 
-                val comments = cardViewModel.comments
+                val comments = cardViewModel.comments.value
 
                 if(comments.isNotEmpty()){
                     items(comments.size){ index ->
@@ -523,307 +498,21 @@ fun CardScreen (
                         }
                     }
 
-                    item{
+                    item {
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
             }
         }
 
-        if(!isCreatingCard){
-            val showDeleteCardDialog = cardViewModel.showDeleteCardDialog
-            if(showDeleteCardDialog && card != null){
-                DeleteCardDialog(
-                    card = card,
-                    cardViewModel = cardViewModel,
-                    setShowDialog = { cardViewModel.showDeleteCardDialog = it },
-                    requestCloseScreen = {
-                        cardViewModel.removeCardFromList(card)
-                        nav.popBackStack()
-                    }
-                )
-            }
-        }
-
-        if(cardViewModel.showSelectResponsibleDialog){
-            SelectUserDialog(
-                users = cardViewModel.getCurrentKanbanMembers(),
-                setShowDialog = {cardViewModel.showSelectResponsibleDialog = false},
-                title = stringResource(id = R.string.responsible),
-                onSelectUser = { user ->
-                    cardViewModel.responsible = user
-                    if(!showButton) showButton = true
-                }
-            )
-        }
-
-        if(cardViewModel.showSelectPriorityDialog){
-            SelectPriorityDialog(
-                priorities = cardViewModel.priorities.filter { it.id != 0 },
-                setShowDialog = {cardViewModel.showSelectPriorityDialog = false},
-                title = stringResource(id = R.string.select_priority),
-                onSelect = { priority ->
-                    cardViewModel.priority = priority
-                    if(!showButton) showButton = true
-                }
-            )
-        }
-
-        if(cardViewModel.showChecklistDialog){
-            ChecklistDialog(
-                cardViewModel = cardViewModel,
-                setShowDialog = {cardViewModel.showChecklistDialog = false},
-                card = card
-            )
-        }
-
-        if(cardViewModel.showSelectStartDateDialog){
-            DateAndTimePickerDialog(
-                onConfirm = { date ->
-                    cardViewModel.startDate = DateUtil.getDateFormated(date)
-                    if(!showButton) showButton = true
-                },
-                onDismiss = { cardViewModel.showSelectStartDateDialog = false },
-            )
-        }
-
-        if(cardViewModel.showSelectFinalDateDialog){
-            DateAndTimePickerDialog(
-                onConfirm = { date ->
-                    cardViewModel.finalDate = DateUtil.getDateFormated(date)
-                    if(!showButton) showButton = true
-                },
-                onDismiss = {cardViewModel.showSelectFinalDateDialog = false},
-            )
-        }
-
-        if(cardViewModel.showCommentOptionsDialog != null){
-            CommentOptionsDialog(
-                cardViewModel,
-                setShowDialog = {cardViewModel.showCommentOptionsDialog = null},
-                comment = cardViewModel.showCommentOptionsDialog!!
-            )
-        }
-
-        if(cardViewModel.showEditCommentDialog != null){
-            EditCommentDialog(
-                cardViewModel,
-                setShowDialog = {cardViewModel.showEditCommentDialog = null},
-                commentToEdit = cardViewModel.showEditCommentDialog!!
-            )
-        }
-
-        if(cardViewModel.isLoading.collectAsStateWithLifecycle().value){
-            MyProgressBar()
-        }
-    }
-
-}
-
-
-
-fun onSaveClick(
-    title: String?,
-    description: String,
-    columnId: String,
-    priority: Int,
-    userId: String?,
-    context: Context,
-    cardViewModel: CardViewModel,
-    nav: NavHostController,
-){
-    if(!title.isNullOrEmpty()){
-        cardViewModel.saveCard(title, description, columnId, priority, userId, nav)
-    } else {
-        Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
-    }
-}
-
-fun onUpdateClick(
-    card: Card?,
-    title: String?,
-    description: String,
-    context: Context,
-    cardViewModel: CardViewModel,
-    nav: NavHostController,
-){
-    if(card != null){
-        if(!title.isNullOrEmpty()){
-            if(verifyIfHasChangesInCard(card, title, description, cardViewModel.responsible?.documentId, cardViewModel.priority?.id ?: card.priority, cardViewModel)){
-                card.title = title
-                card.description = description
-                card.responsibleId = cardViewModel.responsible?.documentId
-                card.priority = cardViewModel.priority?.id ?: card.priority
-                card.startDate = cardViewModel.startDate ?: card.startDate
-                card.endDate = cardViewModel.finalDate ?: card.endDate
-                cardViewModel.updateCard(card, nav)
-            } else {
-                nav.popBackStack()
-            }
-        } else {
-            Toast.makeText(context, ContextCompat.getString(context, R.string.insert_title), Toast.LENGTH_LONG).show()
-        }
-    }
-}
-
-fun verifyIfHasChangesInCard(
-    card: Card,
-    title: String?,
-    description: String,
-    responsibleId: String?,
-    selectedPriority: Int,
-    cardViewModel: CardViewModel
-) : Boolean{
-    return card.title != title ||
-            card.description != description ||
-            card.responsibleId != responsibleId ||
-            card.priority != selectedPriority ||
-            card.startDate != cardViewModel.startDate ||
-            card.endDate != cardViewModel.finalDate
-}
-
-@Composable
-fun TitleTextField(
-    text: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-) {
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        textStyle = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = colorResource(id = R.color.menu_background),
-            unfocusedIndicatorColor = colorResource(id = R.color.menu_background),
-            focusedIndicatorColor = colorResource(id = R.color.menu_background),
-            focusedTextColor = colorResource(id = R.color.title)
-        ),
-        value = text,
-        onValueChange = { onValueChange(it) },
-        placeholder = {
-            Text(
-                text = stringResource(id = R.string.title),
-                color = PlaceholderGrey,
-                fontWeight = FontWeight.Medium,
-                fontSize = 18.sp
-            )
-        },
-        maxLines = 1
-    )
-}
-
-@Composable
-fun DescriptionTextField(
-    text: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit
-) {
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        textStyle = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = colorResource(id = R.color.menu_background),
-            unfocusedIndicatorColor = colorResource(id = R.color.menu_background),
-            focusedIndicatorColor = colorResource(id = R.color.menu_background),
-            focusedTextColor = colorResource(id = R.color.title)
-        ),
-        value = text,
-        onValueChange = { onValueChange(it) },
-        placeholder = { Text(
-            text = stringResource(id = R.string.description),
-            color = PlaceholderGrey,
-            fontWeight = FontWeight.Medium,
-            fontSize = 18.sp
-        )}
-    )
-}
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun CommentItem(
-    comment: Comment,
-    cardViewModel: CardViewModel
-){
-
-    val isAuthorCurrentUser = comment.authorId == FirebaseAuth.getInstance().currentUser?.uid
-
-    Column (modifier = Modifier
-        .fillMaxWidth()
-        .padding(
-            start = if (isAuthorCurrentUser) 50.dp else 20.dp,
-            end = if (isAuthorCurrentUser) 20.dp else 50.dp
+        CardScreenDialogs(
+            isCreatingCard = isCreatingCard,
+            card = card,
+            popBackStack = { nav.popBackStack() },
+            cardViewModel,
+            showButton = showButton,
+            setShowButton = { value -> showButton = value},
         )
-        .background(
-            color = colorResource(id = if (isAuthorCurrentUser) R.color.comment_author_background else R.color.comment_background),
-            shape = RoundedCornerShape(
-                topStart = 30.dp,
-                topEnd = 30.dp,
-                bottomStart = if (isAuthorCurrentUser) 30.dp else 0.dp,
-                bottomEnd = if (isAuthorCurrentUser) 0.dp else 30.dp
-            )
-        )) {
-        Row (
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 20.dp, end = 5.dp, bottom = 10.dp, top = 10.dp)
-                .fillMaxWidth()
-        ){
-            Row {
-                val author = cardViewModel.getKanbanMember(comment.authorId)
-
-                if(author?.photoUrl == null ){
-                    Image(
-                        painter = painterResource(id = R.drawable.profile),
-                        contentDescription = "author",
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                    )
-                } else {
-                    GlideImage(
-                        model = author.photoUrl,
-                        contentDescription = "author",
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(RoundedCornerShape(15.dp)),
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    modifier = Modifier,
-                    text = author?.name ?: (author?.email ?: ""),
-                    color = colorResource(id = R.color.title),
-                    fontSize = 16.sp
-                )
-            }
-            if(isAuthorCurrentUser) {
-                IconButton(
-                    onClick = { cardViewModel.showCommentOptionsDialog = comment }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = null,
-                        tint = colorResource(id = R.color.title)
-                    )
-                }
-            }
-        }
-
-        Text(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp),
-            text = comment.text ?: "",
-            color = colorResource(id = R.color.title),
-            fontSize = 16.sp
-        )
-
-        Text(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
-            text = comment.creationDate ?: "",
-            color = colorResource(id = R.color.text),
-            fontSize = 12.sp
-        )
-
     }
-
 }
 
