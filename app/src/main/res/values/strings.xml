@@ -10,6 +10,7 @@
     <string name="doing">DOING</string>
     <string name="done">DONE</string>
     <string name="create_card">Create Card</string>
+    <string name="update_card">Update Card</string>
     <string name="save">Save</string>
     <string name="update">Update</string>
     <string name="insert_title">Insert a title!</string>

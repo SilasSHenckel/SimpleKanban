@@ -123,7 +123,7 @@ fun CardScreen (
                     Spacer(modifier = Modifier.width(5.dp))
 
                     Text(
-                        text = stringResource(id = R.string.create_card),
+                        text = stringResource(id = if(isCreatingCard) R.string.create_card else R.string.update_card),
                         color = colorResource(id = R.color.title),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp

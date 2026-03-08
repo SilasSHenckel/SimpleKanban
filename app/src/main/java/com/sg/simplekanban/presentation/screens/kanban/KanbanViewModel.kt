@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.sg.simplekanban.commom.preferences.AppPreferences
 import com.sg.simplekanban.commom.util.DateUtil
 import com.sg.simplekanban.data.model.Card
+import com.sg.simplekanban.data.model.CardPriority
 import com.sg.simplekanban.data.model.Column
 import com.sg.simplekanban.data.model.Kanban
 import com.sg.simplekanban.data.model.User
@@ -34,7 +35,8 @@ class KanbanViewModel @Inject constructor(
     private val currentKanbanManager: CurrentKanbanManager,
     private val currentUserManager: CurrentUserManager,
     private val currentColumnsManager: CurrentColumnsManager,
-    private val currentCardManager: CurrentCardManager
+    private val currentCardManager: CurrentCardManager,
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ): BaseViewModel() {
 
     private val _kanbans = MutableStateFlow<List<Kanban>>(emptyList())
@@ -51,9 +53,9 @@ class KanbanViewModel @Inject constructor(
 
     var currentUser : User? = null
 
-    var firebaseUserId : String? = FirebaseAuth.getInstance().currentUser?.uid
+    var firebaseUserId : String? = firebaseAuth.currentUser?.uid
 
-    val currentKanban = currentKanbanManager.currentKanban
+    val currentKanban: StateFlow<Kanban?> = currentKanbanManager.currentKanban
     val currentKanbanUserId get() = currentUserManager.currentKanbanUserId
     val userId get() = currentUserManager.userId
 
@@ -69,8 +71,8 @@ class KanbanViewModel @Inject constructor(
     fun setCards(cards: List<Card>) = currentCardManager.setCards(cards)
 
     init {
-        loadKanbans()
         getCurrentUser()
+        loadKanbans()
     }
 
     private fun getCurrentUser() {
