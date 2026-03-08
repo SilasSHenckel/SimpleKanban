@@ -20,6 +20,9 @@ Download the app on Google Play:
 https://play.google.com/store/apps/details?id=com.sg.simplekanban&hl=pt_BR
 
 
+
+---
+
 ## Overview
 
 The application enables users to create, update, and organize tasks across different stages of a Kanban workflow such as:
@@ -29,6 +32,12 @@ The application enables users to create, update, and organize tasks across diffe
 - Done
 
 The project was built to demonstrate modern Android architecture using Kotlin and Jetpack Compose while following clean architecture principles and best practices for scalability and maintainability.
+
+---
+
+## Authentication
+
+This project uses social authentication with google, to grant easy and secure access to users
 
 ---
 
@@ -83,23 +92,6 @@ Android libraries used include components from **Android Jetpack**, such as:
 ---
 
 ## Project Structure
-app/
-├── data
-│ ├── repository
-│ ├── datasource
-│ └── model
-│
-├── domain
-│ ├── model
-│ ├── repository
-│ └── usecase
-│
-├── presentation
-│ ├── screens
-│ ├── components
-│ └── viewmodel
-
-Explanation:
 
 data  
 Contains repositories and data sources responsible for interacting with Firebase and local database.
@@ -131,6 +123,9 @@ Repositories expose suspend functions and ViewModels launch coroutines using vie
 ---
 
 ## Code Quality
+
+Crashes and Bugs
+- This project is integrated with firebase crashlytics to analyse and fix crashes 
 
 The project follows best practices such as:
 
